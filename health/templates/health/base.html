@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart-Rural Health | Modern Child Healthcare</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS (CDN for Dribbble-style prototyping) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#10b981',
+                        accent: '#f59e0b',
+                        surface: '#ffffff',
+                        background: '#f8fafc',
+                        pastel: {
+                            green: '#dcfce7',
+                            yellow: '#fef9c3',
+                            red: '#fee2e2',
+                            blue: '#e0e7ff',
+                        }
+                    },
+                    boxShadow: {
+                        'dribbble': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'soft': '0 4px 20px rgba(0,0,0,0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <style>
+        body { background-color: theme('colors.background'); }
+        /* Custom smooth scrolling and transitions */
+        html { scroll-behavior: smooth; }
+        .transition-all { transition-duration: 300ms; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-primary selection:text-white">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <a href="{% url 'index' %}" class="flex items-center gap-2 text-2xl font-bold text-primary hover:text-indigo-600 transition-colors">
+                    <i class="fas fa-heart-pulse"></i>
+                    Smart-Rural Health
+                </a>
+                
+                <div class="flex items-center gap-4">
+                    {% if user.is_authenticated %}
+                        <span class="text-sm font-medium text-slate-500 hidden sm:block">
+                            <i class="fas fa-user-circle mr-1"></i> {{ user.username }}
+                        </span>
+                        {% if user.is_parent %}
+                            <a href="{% url 'add_child' %}" class="bg-primary hover:bg-indigo-600 text-white px-4 py-2 rounded-xl font-semibold shadow-md shadow-indigo-200 transition-all transform hover:-translate-y-0.5">
+                                <i class="fas fa-plus mr-1"></i> Add Child
+                            </a>
+                        {% endif %}
+                        <form action="{% url 'logout' %}" method="post" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100 transition-colors">
+                                <i class="fas fa-sign-out-alt text-lg"></i>
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="bg-primary hover:bg-indigo-600 text-white px-6 py-2 rounded-xl font-semibold shadow-md shadow-indigo-200 transition-all transform hover:-translate-y-0.5">
+                            Sign In
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- External Libraries -->
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

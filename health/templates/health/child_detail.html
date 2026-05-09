@@ -1,0 +1,379 @@
+{% extends 'health/base.html' %}
+
+{% block content %}
+<!-- Child Header Profile -->
+<div class="bg-white rounded-[2rem] p-8 shadow-dribbble border border-slate-100 flex justify-between items-center mb-8 relative overflow-hidden">
+    <!-- Abstract Background Shape -->
+    <div class="absolute right-0 top-0 w-64 h-64 bg-gradient-to-br from-primary/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/3"></div>
+    
+    <div class="flex items-center gap-6 z-10">
+        <div class="w-24 h-24 bg-pastel-blue rounded-full flex items-center justify-center text-4xl text-primary shadow-soft">
+            <i class="fas fa-child"></i>
+        </div>
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ child.name }}</h1>
+            <p class="text-slate-500 font-medium">DOB: {{ child.date_of_birth }} &bull; {{ child.locality.name }}</p>
+        </div>
+    </div>
+    <div class="z-10">
+        <a href="{% url 'download_passport' child.id %}" class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-slate-300 transition-transform hover:-translate-y-0.5 inline-flex items-center gap-2">
+            <i class="fas fa-download"></i> Health Passport
+        </a>
+    </div>
+</div>
+
+<!-- Navigation Tabs -->
+<div class="flex gap-4 mb-8 overflow-x-auto pb-2 scrollbar-hide tab-links">
+    <button onclick="openTab(event, 'nutrition')" class="tab-btn bg-primary text-white px-6 py-3 rounded-full font-bold shadow-md shadow-indigo-200 whitespace-nowrap active">Nutrition Engine</button>
+    <button onclick="openTab(event, 'immunization')" class="tab-btn bg-white hover:bg-slate-50 text-slate-600 px-6 py-3 rounded-full font-semibold border border-slate-200 whitespace-nowrap transition-colors">Immunization</button>
+    <button onclick="openTab(event, 'growth')" class="tab-btn bg-white hover:bg-slate-50 text-slate-600 px-6 py-3 rounded-full font-semibold border border-slate-200 whitespace-nowrap transition-colors">Growth Tracking</button>
+    <button onclick="openTab(event, 'games')" class="tab-btn bg-white hover:bg-slate-50 text-slate-600 px-6 py-3 rounded-full font-semibold border border-slate-200 whitespace-nowrap transition-colors">Logic Games</button>
+</div>
+
+<!-- Dribbble-Style Nutrition Engine -->
+<div id="nutrition" class="space-y-8 tab-content block">
+    
+    <!-- AI Invisible Assistant Banner -->
+    <div class="bg-gradient-to-r from-pastel-yellow to-white p-6 rounded-[2rem] border border-yellow-200 shadow-sm flex items-start gap-4">
+        <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-accent shadow-sm flex-shrink-0">
+            <i class="fas fa-magic"></i>
+        </div>
+        <div>
+            <h3 class="text-lg font-bold text-yellow-800">Invisible Assistant Active</h3>
+            <p class="text-slate-600 text-sm mt-1">
+                Your meal plan has been dynamically adjusted based on today's simulated market prices. We prioritized affordable, high-nutrition options.
+            </p>
+        </div>
+    </div>
+
+    <!-- Analytics & Shopping Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left: Donut Chart -->
+        <div class="bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100 flex flex-col justify-center items-center">
+            <h3 class="text-lg font-bold text-slate-800 mb-6 self-start w-full">Nutrition Breakdown</h3>
+            <div class="w-48 h-48 relative">
+                <canvas id="nutritionChart"></canvas>
+                <div class="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
+                    <span class="text-2xl font-extrabold text-slate-800">100%</span>
+                    <span class="text-xs font-bold text-slate-400">BALANCED</span>
+                </div>
+            </div>
+            <div class="w-full mt-8 flex justify-between text-sm font-semibold text-slate-500">
+                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#10b981]"></div> Protein</div>
+                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#f59e0b]"></div> Carbs</div>
+                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#6366f1]"></div> Vitamins</div>
+            </div>
+        </div>
+
+        <!-- Right: Smart Meal Cards (Swiper Carousel) -->
+        <div class="lg:col-span-2 bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100 overflow-hidden relative">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold text-slate-800">7-Day Smart Diet Plan</h3>
+                <div class="flex gap-2">
+                    <button class="swiper-button-prev-custom w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"><i class="fas fa-chevron-left"></i></button>
+                    <button class="swiper-button-next-custom w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <!-- Swiper Container -->
+            <div class="swiper nutritionSwiper !pb-10">
+                <div class="swiper-wrapper">
+                    {% for day, meals in diet_plan.items %}
+                    <div class="swiper-slide">
+                        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 h-full">
+                            <h4 class="text-xl font-extrabold text-primary mb-4">{{ day|upper }}</h4>
+                            <div class="space-y-4">
+                                {% for meal in meals %}
+                                <div class="flex items-start gap-4">
+                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm {% if meal.meal == 'Breakfast' %}bg-orange-100 text-orange-600{% elif 'Lunch' in meal.meal %}bg-blue-100 text-blue-600{% elif 'Dinner' in meal.meal %}bg-indigo-100 text-indigo-600{% else %}bg-green-100 text-green-600{% endif %}">
+                                        {{ meal.time|slice:":2" }}
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ meal.meal }}</p>
+                                        <p class="text-slate-800 font-semibold">{{ meal.food }}</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="swiper-pagination !bottom-0"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Smart Shopping List -->
+    <div>
+        <h3 class="text-xl font-bold text-slate-800 mb-6">Smart Shopping List</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for food in recommendation.recommended_foods.all %}
+            <div class="bg-white rounded-[2rem] overflow-hidden shadow-dribbble border border-slate-100 group hover:-translate-y-1 transition-transform">
+                <div class="h-32 bg-gradient-to-br from-pastel-green to-pastel-blue relative flex items-center justify-center text-5xl text-white/80">
+                    <i class="fas {% if food.category == 'protein' %}fa-egg{% elif 'millet' in food.category %}fa-seedling{% elif 'greens' in food.category %}fa-leaf{% else %}fa-bowl-food{% endif %}"></i>
+                    
+                    {% if food.is_low_cost %}
+                    <div class="absolute top-4 right-4 bg-red-500 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-md uppercase tracking-wider">
+                        <i class="fas fa-tag mr-1"></i> Smart Saver
+                    </div>
+                    {% endif %}
+                    
+                    <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur text-secondary text-[10px] font-bold px-2 py-1 rounded shadow-sm">
+                        FRESH IN {{ child.locality.name|upper }}
+                    </div>
+                </div>
+                
+                <div class="p-6">
+                    <h4 class="text-lg font-bold text-slate-800 mb-2">{{ food.name }}</h4>
+                    <p class="text-sm text-slate-500 line-clamp-2 mb-4">{{ food.nutritional_description }}</p>
+                    
+                    <div class="flex gap-2">
+                        <span class="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-lg">{{ food.protein_content }}g Protein</span>
+                        <span class="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]" title="{{ food.vitamin_content }}">{{ food.vitamin_content|default:"Vitamins" }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Immunization Roadmap Tab -->
+<div id="immunization" class="bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100 tab-content hidden">
+    <h3 class="text-2xl font-bold text-slate-800 mb-8 flex items-center gap-2">
+        <i class="fas fa-map text-secondary"></i> Immunity Roadmap
+    </h3>
+    
+    <div class="relative max-w-2xl mx-auto">
+        <!-- SVG Winding Path Background -->
+        <svg class="absolute inset-0 w-full h-full -z-10" viewBox="0 0 100 200" preserveAspectRatio="none">
+            <path d="M 10 10 Q 50 50 10 90 T 50 170" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4 4" />
+        </svg>
+
+        <!-- Roadmap Nodes -->
+        <div class="space-y-12 relative">
+            {% for vax in vaccinations %}
+            {% if vax.status == 'completed' %}
+            <!-- Completed Node -->
+            <div class="flex items-center gap-6 group cursor-pointer">
+                <div class="w-12 h-12 bg-secondary text-white rounded-full flex items-center justify-center shadow-lg shadow-green-200 z-10 transition-transform group-hover:scale-110">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="bg-pastel-green px-6 py-4 rounded-2xl flex-1 relative transition-all group-hover:shadow-md">
+                    <div class="absolute left-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-pastel-green rotate-45"></div>
+                    <div class="flex justify-between items-start">
+                        <h4 class="font-bold text-green-800">{{ vax.vaccine.name }}</h4>
+                        <span class="text-xs text-green-600 font-bold">{{ vax.administered_date|date:"M d, Y" }}</span>
+                    </div>
+                    <p class="text-sm text-green-700 mt-1">{{ vax.vaccine.description }}</p>
+                    <span class="text-xs font-bold text-white bg-green-600 px-2 py-1 rounded mt-2 inline-block"><i class="fas fa-shield"></i> Shield Unlocked</span>
+                </div>
+            </div>
+            {% elif vax.status == 'pending' or vax.status == 'overdue' %}
+            <!-- Active/Pending Node -->
+            <div class="flex items-center gap-6 group cursor-pointer ml-8">
+                <div class="w-14 h-14 bg-white border-4 border-accent text-accent rounded-full flex items-center justify-center shadow-xl shadow-yellow-100 z-10 relative">
+                    <div class="absolute inset-0 border-4 border-accent rounded-full animate-ping opacity-20"></div>
+                    <i class="fas fa-star text-xl"></i>
+                </div>
+                <div class="bg-pastel-yellow px-6 py-4 rounded-2xl flex-1 relative border border-yellow-200 transition-all group-hover:shadow-lg">
+                    <div class="absolute left-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-pastel-yellow border-b border-l border-yellow-200 rotate-45"></div>
+                    <div class="flex justify-between items-start">
+                        <h4 class="font-bold text-yellow-800">{{ vax.vaccine.name }}</h4>
+                        <span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">DUE: {{ vax.due_date|date:"M d, Y" }}</span>
+                    </div>
+                    <p class="text-sm text-yellow-700 mt-1">{{ vax.vaccine.description }}</p>
+                    
+                    {% if user.is_vaccination_admin %}
+                    <div class="mt-4 flex gap-2">
+                        <a href="{% url 'mark_vaccine_complete' vax.id %}" class="bg-secondary text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-600 transition-colors">
+                            Mark Complete <i class="fas fa-check ml-1"></i>
+                        </a>
+                        <a href="{% url 'trigger_urgent_reminder' child.id %}" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-600 transition-colors">
+                            Remind Parent <i class="fas fa-bell ml-1"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            {% empty %}
+            <p class="text-slate-500">No vaccination schedule found.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Growth Tracking Tab -->
+<div id="growth" class="bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100 tab-content hidden">
+    <div class="flex justify-between items-start mb-8">
+        <div>
+            <h3 class="text-2xl font-bold text-slate-800">Growth Tracking</h3>
+            <p class="text-slate-500 mt-1">Current stats: Weight: {{ child.current_weight }} kg | Height: {{ child.current_height }} cm</p>
+        </div>
+        
+        <form action="{% url 'add_growth_record' child.id %}" method="post" class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex gap-4 items-end">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">Weight (kg)</label>
+                <input type="number" step="0.1" name="weight" required class="w-24 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-primary">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">Height (cm)</label>
+                <input type="number" step="0.1" name="height" required class="w-24 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-primary">
+            </div>
+            <button type="submit" class="bg-primary hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold transition-colors">Add</button>
+        </form>
+    </div>
+    
+    <div class="w-full h-64">
+        <canvas id="growthChart"></canvas>
+    </div>
+</div>
+
+<!-- Logic Games Tab -->
+<div id="games" class="bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100 tab-content hidden">
+    <h3 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+        <i class="fas fa-gamepad text-primary"></i> Play & Learn
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for game in online_games %}
+        {% if game.url %}
+        <!-- Online Game -->
+        <a href="{{ game.url }}" target="_blank" rel="noopener noreferrer" class="bg-pastel-blue p-6 rounded-2xl hover:shadow-lg transition-all group block border border-blue-100 relative overflow-hidden">
+            <div class="absolute right-[-20px] top-[-20px] w-24 h-24 bg-primary/10 rounded-full group-hover:scale-150 transition-transform"></div>
+            <span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm mb-2 inline-block relative z-10">ONLINE GAME</span>
+            <h4 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-primary transition-colors relative z-10">{{ game.name }}</h4>
+            <p class="text-slate-600 text-sm relative z-10">{{ game.description }}</p>
+            <div class="mt-4 text-xs font-bold text-primary flex items-center gap-1 relative z-10">
+                Play Now <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+            </div>
+        </a>
+        {% else %}
+        <!-- Offline Activity -->
+        <div class="bg-pastel-yellow p-6 rounded-2xl border border-yellow-200 relative overflow-hidden">
+            <div class="absolute right-[-20px] top-[-20px] w-24 h-24 bg-accent/10 rounded-full"></div>
+            <span class="bg-accent text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm mb-2 inline-block relative z-10">TODAY'S OFFLINE ACTIVITY</span>
+            <h4 class="text-xl font-bold text-yellow-800 mb-2 relative z-10">{{ game.name }}</h4>
+            <p class="text-yellow-700 text-sm relative z-10">{{ game.description }}</p>
+            <div class="mt-4 text-xs font-bold text-yellow-600 flex items-center gap-1 relative z-10">
+                <i class="fas fa-hands text-lg"></i>
+            </div>
+        </div>
+        {% endif %}
+        {% empty %}
+        <p class="text-slate-500">No games currently available.</p>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function openTab(evt, tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('block');
+            tab.classList.add('hidden');
+        });
+        
+        // Reset all tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.className = "tab-btn bg-white hover:bg-slate-50 text-slate-600 px-6 py-3 rounded-full font-semibold border border-slate-200 whitespace-nowrap transition-colors";
+        });
+        
+        // Show current tab
+        const currentTab = document.getElementById(tabName);
+        if (currentTab) {
+            currentTab.classList.remove('hidden');
+            currentTab.classList.add('block');
+        }
+        
+        // Set active class on clicked button
+        evt.currentTarget.className = "tab-btn bg-primary text-white px-6 py-3 rounded-full font-bold shadow-md shadow-indigo-200 whitespace-nowrap active";
+    }
+
+    // Initialize Swiper
+    document.addEventListener('DOMContentLoaded', function() {
+        const swiper = new Swiper('.nutritionSwiper', {
+            slidesPerView: 1.2,
+            spaceBetween: 20,
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next-custom',
+                prevEl: '.swiper-button-prev-custom',
+            },
+            breakpoints: {
+                640: { slidesPerView: 2.2 },
+                1024: { slidesPerView: 2.5 }
+            }
+        });
+
+        // Initialize Chart.js Donut Chart
+        const ctx = document.getElementById('nutritionChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Protein', 'Carbs', 'Vitamins & Fats'],
+                datasets: [{
+                    data: [35, 45, 20],
+                    backgroundColor: ['#10b981', '#f59e0b', '#6366f1'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                cutout: '75%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) { return context.label + ': ' + context.parsed + '%'; }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Initialize Growth Chart
+        const growthCtx = document.getElementById('growthChart');
+        if (growthCtx) {
+            new Chart(growthCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [{% for r in growth_records %}'{{ r.recorded_at|date:"M d" }}',{% endfor %}],
+                    datasets: [{
+                        label: 'Weight (kg)',
+                        data: [{% for r in growth_records %}{{ r.weight }},{% endfor %}],
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Height (cm)',
+                        data: [{% for r in growth_records %}{{ r.height }},{% endfor %}],
+                        borderColor: '#10b981',
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: { y: { beginAtZero: false } }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

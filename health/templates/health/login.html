@@ -1,0 +1,58 @@
+{% extends 'health/base.html' %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center">
+    <div class="bg-white rounded-[2rem] shadow-dribbble border border-slate-100 p-10 w-full max-w-md relative overflow-hidden">
+        
+        <!-- Abstract Background Shapes -->
+        <div class="absolute -top-20 -right-20 w-48 h-48 bg-pastel-blue rounded-full opacity-50 blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-20 -left-20 w-48 h-48 bg-pastel-yellow rounded-full opacity-50 blur-3xl pointer-events-none"></div>
+
+        <div class="text-center mb-8 relative z-10">
+            <div class="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center text-2xl shadow-soft mx-auto mb-4">
+                <i class="fas fa-heart-pulse"></i>
+            </div>
+            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Welcome Back</h1>
+            <p class="text-slate-500 mt-2 font-medium">Sign in to manage your health journey.</p>
+        </div>
+
+        <form method="post" class="space-y-6 relative z-10">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="bg-red-50 text-red-600 text-sm font-bold p-4 rounded-xl border border-red-100">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">Username</label>
+                    <input type="text" name="username" required 
+                           class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 font-medium placeholder-slate-400"
+                           placeholder="Enter your username">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">Password</label>
+                    <input type="password" name="password" required 
+                           class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 font-medium placeholder-slate-400"
+                           placeholder="Enter your password">
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-primary hover:bg-indigo-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-200 transition-all transform hover:-translate-y-0.5 mt-2">
+                Sign In
+            </button>
+        </form>
+
+        <div class="mt-8 text-center relative z-10 border-t border-slate-100 pt-6">
+            <p class="text-sm text-slate-500 font-medium">
+                Test Accounts:<br>
+                <span class="text-primary font-bold">parent_test</span> | <span class="text-secondary font-bold">admin_test</span>
+                <br>(Password: pass123)
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

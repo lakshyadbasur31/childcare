@@ -1,0 +1,201 @@
+{% extends 'health/base.html' %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-12">
+    <div>
+        <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight">Hello, {{ user.username }}!</h1>
+        <p class="text-lg text-slate-500 mt-1">Your child's healthcare journey continues here.</p>
+    </div>
+    {% if urgent_count > 0 %}
+    <div class="bg-pastel-red/50 border-2 border-red-200 text-red-700 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 animate-pulse shadow-soft">
+        <i class="fas fa-bell"></i> {{ urgent_count }} Action Required
+    </div>
+    {% endif %}
+</div>
+
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- Left Column: Child Profiles & Roadmaps -->
+    <div class="col-span-2 space-y-8">
+        {% for child in children %}
+        <div class="bg-white rounded-[2rem] shadow-dribbble overflow-hidden border border-slate-100 relative">
+            
+            <!-- Child Header -->
+            <div class="bg-pastel-blue p-8 flex items-center gap-6">
+                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-3xl text-primary shadow-soft relative">
+                    <i class="fas fa-child"></i>
+                    <div class="absolute -bottom-2 -right-2 bg-secondary text-white text-xs font-bold px-2 py-1 rounded-lg shadow-sm">
+                        LVL 2
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <h2 class="text-2xl font-bold text-slate-800">{{ child.name }}</h2>
+                    <p class="text-slate-500 font-medium">DOB: {{ child.date_of_birth }} &bull; Health Hero</p>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mt-4 bg-white/50 h-3 rounded-full overflow-hidden">
+                        <div class="bg-primary h-full w-[45%] rounded-full relative">
+                            <div class="absolute right-0 top-0 bottom-0 w-4 bg-white/20 animate-[pulse_1s_ease-in-out_infinite]"></div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-primary font-bold mt-1 text-right">45% to Next Rank</p>
+                    
+                    <!-- Quick Links / Feature Tabs -->
+                    <div class="mt-6 flex flex-wrap gap-3">
+                        <a href="{% url 'child_detail' child.id %}" class="bg-indigo-50 hover:bg-indigo-100 text-primary px-4 py-2 rounded-xl text-xs font-bold transition-colors border border-indigo-100">
+                            <i class="fas fa-utensils mr-1"></i> Nutrition Engine
+                        </a>
+                        <a href="{% url 'child_detail' child.id %}" class="bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2 rounded-xl text-xs font-bold transition-colors border border-green-100">
+                            <i class="fas fa-chart-line mr-1"></i> Growth Tracking
+                        </a>
+                        <a href="{% url 'child_detail' child.id %}" class="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 px-4 py-2 rounded-xl text-xs font-bold transition-colors border border-yellow-100">
+                            <i class="fas fa-gamepad mr-1"></i> Logic Games
+                        </a>
+                        <a href="{% url 'download_passport' child.id %}" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-sm ml-auto">
+                            <i class="fas fa-download mr-1"></i> Passport
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Roadmap (SVG Pathing) -->
+            <div class="p-8 pb-12 relative overflow-hidden">
+                <h3 class="text-xl font-bold text-slate-800 mb-8 flex items-center gap-2">
+                    <i class="fas fa-map text-secondary"></i> Immunity Roadmap
+                </h3>
+                
+                <div class="relative max-w-lg mx-auto">
+                    <!-- SVG Winding Path Background -->
+                    <svg class="absolute inset-0 w-full h-full -z-10" viewBox="0 0 100 200" preserveAspectRatio="none">
+                        <path d="M 10 10 Q 50 50 10 90 T 50 170" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4 4" />
+                    </svg>
+
+                    <!-- Roadmap Nodes -->
+                    <div class="space-y-12 relative">
+                        
+                        <!-- Completed Node -->
+                        <div class="flex items-center gap-6 group cursor-pointer">
+                            <div class="w-12 h-12 bg-secondary text-white rounded-full flex items-center justify-center shadow-lg shadow-green-200 z-10 transition-transform group-hover:scale-110">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="bg-pastel-green px-6 py-4 rounded-2xl flex-1 relative transition-all group-hover:shadow-md">
+                                <div class="absolute left-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-pastel-green rotate-45"></div>
+                                <h4 class="font-bold text-green-800">Birth Immunization</h4>
+                                <p class="text-sm text-green-700">BCG, HepB, OPV completed.</p>
+                                <span class="text-xs font-bold text-white bg-green-600 px-2 py-1 rounded mt-2 inline-block"><i class="fas fa-shield"></i> Shield Unlocked</span>
+                            </div>
+                        </div>
+
+                        <!-- Active/Pending Node -->
+                        <div class="flex items-center gap-6 group cursor-pointer ml-8">
+                            <div class="w-14 h-14 bg-white border-4 border-accent text-accent rounded-full flex items-center justify-center shadow-xl shadow-yellow-100 z-10 relative">
+                                <div class="absolute inset-0 border-4 border-accent rounded-full animate-ping opacity-20"></div>
+                                <i class="fas fa-star text-xl"></i>
+                            </div>
+                            <div class="bg-pastel-yellow px-6 py-4 rounded-2xl flex-1 relative border border-yellow-200 transition-all group-hover:shadow-lg">
+                                <div class="absolute left-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-pastel-yellow border-b border-l border-yellow-200 rotate-45"></div>
+                                <div class="flex justify-between items-start">
+                                    <h4 class="font-bold text-yellow-800">6-Week Milestone</h4>
+                                    <span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">ACTION REQUIRED</span>
+                                </div>
+                                <p class="text-sm text-yellow-700 mt-1">Pentavalent, Rotavirus, fIPV, PCV.</p>
+                                
+                                <div class="mt-4 flex gap-2">
+                                    <!-- Tooltip Trigger (Simulated with hover) -->
+                                    <button class="bg-white text-yellow-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-yellow-50 transition-colors relative group/tooltip">
+                                        Why it matters?
+                                        <div class="absolute bottom-full left-0 mb-2 w-48 bg-slate-800 text-white text-xs p-2 rounded hidden group-hover/tooltip:block z-50">
+                                            Protects against 5 major diseases including Diphtheria and Tetanus.
+                                        </div>
+                                    </button>
+                                    <a href="{% url 'child_detail' child.id %}" class="bg-accent text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-yellow-600 transition-colors">
+                                        Train Hero <i class="fas fa-arrow-right ml-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Locked Node -->
+                        <div class="flex items-center gap-6 opacity-50 ml-4">
+                            <div class="w-10 h-10 bg-slate-200 text-slate-400 rounded-full flex items-center justify-center z-10">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200 px-6 py-4 rounded-2xl flex-1">
+                                <h4 class="font-bold text-slate-600">10-Week Milestone</h4>
+                                <p class="text-sm text-slate-400">Unlocks after completing 6-Week quest.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <!-- Empty State -->
+        <div class="bg-white rounded-[2rem] shadow-dribbble p-12 text-center border border-dashed border-slate-300">
+            <div class="w-24 h-24 bg-pastel-blue rounded-full flex items-center justify-center text-4xl text-primary mx-auto mb-6">
+                <i class="fas fa-baby-carriage"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Welcome to the Journey!</h2>
+            <p class="text-slate-500 mb-8 max-w-md mx-auto">Register your child to start tracking their health milestones on an interactive roadmap.</p>
+            <a href="{% url 'add_child' %}" class="bg-primary hover:bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all inline-block">
+                <i class="fas fa-plus mr-2"></i> Create Hero Profile
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Right Column: Sidebar -->
+    <div class="space-y-8">
+        
+        <!-- Storybook Achievements -->
+        <div class="bg-white rounded-[2rem] shadow-dribbble p-6 border border-slate-100">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <i class="fas fa-trophy text-accent"></i> Recent Trophies
+            </h3>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-pastel-yellow p-4 rounded-xl text-center">
+                    <i class="fas fa-shield-virus text-3xl text-accent mb-2"></i>
+                    <p class="text-xs font-bold text-slate-700">Shield of BCG</p>
+                </div>
+                <div class="bg-pastel-green p-4 rounded-xl text-center opacity-40 grayscale">
+                    <i class="fas fa-drumstick-bite text-3xl text-secondary mb-2"></i>
+                    <p class="text-xs font-bold text-slate-700">Protein Power</p>
+                    <p class="text-[10px] text-slate-500">Locked</p>
+                </div>
+            </div>
+            <button class="w-full mt-4 bg-slate-50 hover:bg-slate-100 text-slate-600 py-2 rounded-xl text-sm font-semibold transition-colors">
+                View Storybook PDF
+            </button>
+        </div>
+
+        <!-- Notification Feed -->
+        <div class="bg-white rounded-[2rem] shadow-dribbble p-6 border border-slate-100">
+            <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <i class="fas fa-flag-checkered text-primary"></i> Quest Updates
+            </h3>
+            <div class="space-y-6">
+                {% for note in notifications|slice:":3" %}
+                <div class="flex gap-4 relative">
+                    <div class="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center z-10 {% if note.is_urgent %}bg-pastel-red text-red-600{% else %}bg-pastel-blue text-primary{% endif %}">
+                        <i class="fas {% if note.is_urgent %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-start">
+                            <h4 class="font-bold text-sm text-slate-800">{{ note.title }}</h4>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1 line-clamp-2">{{ note.message }}</p>
+                        <span class="text-[10px] text-slate-400 font-medium mt-1 block">{{ note.created_at|timesince }} ago</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-slate-500 text-sm text-center py-4">No recent updates.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

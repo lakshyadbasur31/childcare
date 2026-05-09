@@ -1,0 +1,114 @@
+{% extends 'health/base.html' %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 300px 1fr; gap: 2rem; align-items: start;">
+    
+    <!-- Left Sidebar: Command Search & Filters -->
+    <div style="position: sticky; top: 100px;">
+        <div class="card" style="padding: 1.5rem;">
+            <h3 style="margin-top: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-search" style="color: var(--primary);"></i> Command Search
+            </h3>
+            <form action="" method="get">
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Child Name or ID..." style="width: 100%; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 1rem; font-family: inherit;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Execute Search</button>
+            </form>
+            
+            <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 2rem 0;">
+            
+            <div style="background: var(--pastel-blue); padding: 1rem; border-radius: 12px;">
+                <h4 style="margin: 0; font-size: 0.9rem; color: var(--primary);">Locality Focus</h4>
+                <p style="margin: 0.25rem 0 0 0; font-weight: 700;">{{ user.locality.name|default:"All Regions" }}</p>
+            </div>
+            
+            <button class="btn" style="width: 100%; margin-top: 1rem; background: var(--pastel-red); color: #991b1b; justify-content: center; font-size: 0.85rem;">
+                <i class="fas fa-broadcast-tower"></i> Send All Reminders
+            </button>
+            
+            {% if oracle_insights %}
+            <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 2rem 0;">
+            <h3 style="margin-top: 0; font-size: 0.95rem; color: var(--accent);">
+                <i class="fas fa-crystal-ball"></i> Village Oracle Insights
+            </h3>
+            {% for insight in oracle_insights %}
+            <div style="background: white; border: 1px solid var(--pastel-yellow); padding: 1rem; border-radius: 12px; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.65rem; background: var(--pastel-yellow); color: #854d0e; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700;">{{ insight.type|upper }}</span>
+                </div>
+                <p style="margin: 0; font-size: 0.8rem; color: var(--text-main); font-weight: 600;">{{ insight.message }}</p>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+        
+        <div style="text-align: center; color: var(--text-muted); font-size: 0.8rem;">
+            <p><i class="fas fa-shield-halved"></i> Admin Security Active</p>
+        </div>
+    </div>
+
+    <!-- Main Panel: Data Grid -->
+    <div>
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div style="padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; background: #fff;">
+                <h2 style="margin: 0; font-size: 1.25rem;">Coverage Monitor</h2>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Showing {{ children.count }} Child Records</span>
+            </div>
+            
+            <div style="padding: 1rem 2rem;">
+                <table style="margin: 0;">
+                    <thead>
+                        <tr>
+                            <th>IDENTIFIER</th>
+                            <th>CHILD NAME</th>
+                            <th>LOCALITY</th>
+                            <th>COVERAGE STATUS</th>
+                            <th style="text-align: right;">OPERATIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for child in children %}
+                        <tr>
+                            <td style="font-family: monospace; font-weight: 700; color: var(--primary);">#{{ child.id|stringformat:"04d" }}</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
+                                        <i class="fas fa-child"></i>
+                                    </div>
+                                    <strong>{{ child.name }}</strong>
+                                </div>
+                            </td>
+                            <td><span style="font-size: 0.85rem; color: var(--text-muted);">{{ child.locality.name }}</span></td>
+                            <td>
+                                {% if child.vaccinations.all %}
+                                    <span class="badge badge-completed"><i class="fas fa-check-circle"></i> Tracking</span>
+                                {% else %}
+                                    <span class="badge badge-pending"><i class="fas fa-clock"></i> New Entry</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right;">
+                                <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                    <a href="{% url 'child_detail' child.id %}" class="btn" style="padding: 0.5rem; background: #f1f5f9; color: var(--text-main);" title="Update Records">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'trigger_urgent_reminder' child.id %}" class="btn" style="padding: 0.5rem; background: var(--pastel-red); color: #991b1b;" title="Send Urgent Alert">
+                                        <i class="fas fa-bolt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 4rem;">
+                                <i class="fas fa-folder-open" style="font-size: 2rem; color: #e2e8f0; display: block; margin-bottom: 1rem;"></i>
+                                <p style="color: var(--text-muted);">No records found in this sector.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

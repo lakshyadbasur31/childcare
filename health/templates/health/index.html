@@ -1,0 +1,37 @@
+{% extends 'health/base.html' %}
+
+{% block content %}
+<div class="header">
+    <h1>Child Health Registry</h1>
+    <p>Monitoring nutrition and immunization for children aged 0-6 years.</p>
+</div>
+
+<div class="card">
+    {% if children %}
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>DOB</th>
+                <th>Locality</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for child in children %}
+            <tr>
+                <td><strong>{{ child.name }}</strong></td>
+                <td>{{ child.date_of_birth }}</td>
+                <td>{{ child.locality.name }}</td>
+                <td>
+                    <a href="{% url 'child_detail' child.id %}" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">View Profile</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="text-align: center; padding: 2rem;">No children registered yet. <a href="{% url 'add_child' %}">Register now.</a></p>
+    {% endif %}
+</div>
+{% endblock %}
