@@ -1,426 +1,215 @@
 {% extends 'health/base.html' %}
 
 {% block content %}
-<!-- MEDIXWEB STYLE HERO SECTION -->
-<div class="relative bg-slate-900 rounded-[3rem] overflow-hidden mb-12 shadow-2xl min-h-[450px] flex items-center">
+<!-- PRESTIGIOUS HERO BANNER -->
+<div class="relative bg-gradient-to-br from-slate-950 via-indigo-950/60 to-slate-950 rounded-[3rem] p-12 overflow-hidden mb-12 shadow-2xl border border-slate-800/40 flex flex-col md:flex-row items-center justify-between gap-8 min-h-[350px]">
     {% load static %}
-    <!-- Hero Image Background -->
-    <div class="absolute inset-0 z-0">
-        <img src="{% static 'health/images/mother_baby.png' %}" alt="MedixWeb Hero" class="w-full h-full object-cover opacity-60">
-        <div class="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/60 to-transparent"></div>
-    </div>
-
-    <!-- Hero Content -->
-    <div class="relative z-10 px-12 py-16 max-w-2xl">
-        <div class="flex items-center gap-2 text-sky-400 font-bold mb-6 tracking-widest uppercase text-xs">
-            <div class="w-8 h-0.5 bg-sky-400"></div>
-            Tiny Care Platform
+    <!-- Soft Decorative Glows -->
+    <div class="absolute -left-20 -top-20 w-80 h-80 bg-primary/10 rounded-full blur-[100px]"></div>
+    <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-rose-500/10 rounded-full blur-[100px]"></div>
+    
+    <div class="relative z-10 max-w-2xl">
+        <div class="inline-flex items-center gap-2 text-primary font-bold mb-4 tracking-widest uppercase text-[10px] bg-slate-900/80 px-4 py-1.5 rounded-full border border-slate-800">
+            <i class="fas fa-sparkles text-amber-400"></i> Welcome to the Future of Parenting
         </div>
-        <h1 class="text-6xl font-black text-white leading-[1.1] mb-6">
-            Nurturing Heroes & <br/>
-            <span class="text-sky-400">Maternal Wellness.</span>
+        <h1 class="text-4xl md:text-5xl font-black text-white leading-tight mb-4">
+            TinyCare: <br/>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-sky-400">Small steps. Giant milestones.</span>
         </h1>
-        <p class="text-lg text-slate-300 mb-10 leading-relaxed font-medium">
-            Nurturing Little Heroes and providing comprehensive maternal care. 
-            Track your family's health journey with precision and love.
+        <p class="text-sm text-slate-400 leading-relaxed font-medium mb-6">
+            An offline-first, regionalized child development engine integrated with complete postpartum maternal care. Empowering Indian mothers and children through science, locality context, and love.
         </p>
-               <div class="flex items-center gap-6">
-            <button onclick="switchView('child')" class="bg-sky-500 hover:bg-sky-400 text-white px-8 py-4 rounded-2xl font-bold transition-all transform hover:scale-105 shadow-xl shadow-sky-500/20">
-                Explore Hero Journeys <i class="fas fa-arrow-right ml-2"></i>
-            </button>
-            <button onclick="switchView('maternal')" class="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-8 py-4 rounded-2xl font-bold transition-all border border-white/20">
-                Maternal Care
-            </button>
-        </div>
     </div>
 
-    <!-- Floating Medix Stats Card -->
-    <div class="absolute right-12 bottom-12 z-20 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] p-6 text-white shadow-2xl hidden lg:block">
-        <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 bg-sky-500 rounded-full flex items-center justify-center text-xl">
-                <i class="fas fa-heart-pulse"></i>
+    <!-- Live Platform Overview Tracker -->
+    <div class="relative z-10 bg-slate-900/90 border border-slate-800 rounded-[2.5rem] p-8 min-w-[280px] shadow-2xl flex-shrink-0">
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-6">Family Status Board</h3>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800/60">
+                <span class="text-xs text-slate-400 font-semibold"><i class="fas fa-child text-primary mr-1.5"></i> Children</span>
+                <span class="text-sm font-black text-white bg-slate-800 px-3 py-1 rounded-xl">{{ children.count }}</span>
             </div>
-            <div>
-                <p class="text-[10px] uppercase font-bold text-slate-400 tracking-tighter">Trusted Care Rate</p>
-                <p class="text-3xl font-black">97%</p>
-            </div>
-        </div>
-        <p class="text-xs text-slate-300 max-w-[180px]">Our platform is trusted by families across India for pediatric monitoring.</p>
-    </div>
-</div>
-
-<!-- MODE SWITCHER -->
-<div class="max-w-md mx-auto mb-12 bg-white p-2 rounded-2xl shadow-soft border border-slate-100 flex gap-2">
-    <button onclick="switchView('child')" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all bg-sky-500 text-white shadow-lg shadow-sky-200">
-        <i class="fas fa-children"></i> Child View
-    </button>
-    <button onclick="switchView('maternal')" class="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all text-slate-500 hover:bg-slate-50">
-        <i class="fas fa-person-breastfeeding"></i> Maternal View
-    </button>
-</div>
-
-<!-- DASHBOARD CONTENT -->
-<div id="child-view" class="view-content">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Main Column -->
-        <div class="lg:col-span-2 space-y-8">
-            {% for child in children %}
-            <div class="bg-white rounded-[2.5rem] shadow-soft border border-slate-100 p-8 flex flex-col md:flex-row gap-8 hover:shadow-xl transition-all border-l-8 border-l-sky-500">
-                <div class="w-full md:w-48 h-48 bg-slate-50 rounded-3xl overflow-hidden flex-shrink-0 border border-slate-100">
-                    {% if child.gender == 'M' %}
-                    <img src="{% static 'health/images/boy_profile.png' %}" alt="Boy Profile" class="w-full h-full object-cover">
-                    {% elif child.gender == 'F' %}
-                    <img src="{% static 'health/images/girl_profile.png' %}" alt="Girl Profile" class="w-full h-full object-cover">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800/60">
+                <span class="text-xs text-slate-400 font-semibold"><i class="fas fa-heart-pulse text-rose-500 mr-1.5"></i> Mother</span>
+                <span class="text-xs font-black text-white">
+                    {% if mother %}
+                        Day {{ maternal_context.day_number }}
                     {% else %}
-                    <img src="{% static 'health/images/mother_baby.png' %}" alt="Child Profile" class="w-full h-full object-cover">
+                        Not Setup
                     {% endif %}
-                </div>
-                <div class="flex-1">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h2 class="text-3xl font-black text-slate-800">{{ child.name }}</h2>
-                            <p class="text-slate-500 font-bold uppercase text-xs tracking-widest mt-1">{% if child.gender == 'F' %}Heroine{% else %}Hero{% endif %} Level: {{ child.date_of_birth|timesince }}</p>
-                        </div>
-                        <span class="bg-sky-50 text-sky-600 px-4 py-2 rounded-xl text-xs font-black border border-sky-100">STABLE</span>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                            <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Growth Progress</p>
-                            <p class="text-lg font-black text-slate-700">{{ child.current_weight|floatformat:1 }} {{ child.weight_unit }}</p>
-                        </div>
-                        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                            <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">Next Immunity Quest</p>
-                            <p class="text-lg font-black text-slate-700">6-Week Quest</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex gap-4">
-                        <a href="{% url 'child_detail' child.id %}" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white text-center py-4 rounded-2xl font-bold transition-all">
-                            Open Profile
-                        </a>
-                        <a href="{% url 'download_passport' child.id %}" class="w-16 bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center rounded-2xl transition-all">
-                            <i class="fas fa-download"></i>
-                        </a>
-                        <a href="{% url 'delete_child' child.id %}" onclick="return confirm('Are you sure you want to remove this profile?')" class="w-16 bg-red-50 hover:bg-red-100 text-red-500 flex items-center justify-center rounded-2xl transition-all border border-red-100">
-                            <i class="fas fa-trash-can"></i>
-                        </a>
-                    </div>
-                </div>
+                </span>
             </div>
-            {% empty %}
-            <!-- Medix Empty State -->
-            <div class="bg-white rounded-[2.5rem] shadow-soft border border-dashed border-slate-300 p-16 text-center">
-                <div class="w-32 h-32 bg-sky-50 rounded-full flex items-center justify-center text-5xl text-sky-500 mx-auto mb-8 shadow-inner">
-                    <i class="fas fa-user-plus"></i>
-                </div>
-                <h3 class="text-3xl font-black text-slate-800 mb-4">No Family Profiles Found</h3>
-                <p class="text-slate-500 max-w-sm mx-auto mb-8 font-medium">Start your families healthcare journey by creating the first hero profile.</p>
-                <a href="{% url 'add_child' %}" class="bg-sky-500 hover:bg-sky-400 text-white px-10 py-4 rounded-2xl font-black shadow-xl shadow-sky-200 transition-all inline-block">
-                    + Add New Profile
-                </a>
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-400 font-semibold"><i class="fas fa-bell text-yellow-500 mr-1.5"></i> Active Alerts</span>
+                <span class="text-xs font-black text-slate-900 bg-yellow-400 px-2 py-0.5 rounded-lg animate-pulse">{{ urgent_count }}</span>
             </div>
-            {% endfor %}
         </div>
-        
-        <!-- Sidebar -->
-        <div class="space-y-8">
-            <div class="bg-white rounded-[2.5rem] p-8 shadow-soft border border-slate-100">
-                <h4 class="text-xl font-black text-slate-800 mb-6">Recent Alerts</h4>
-                <div class="space-y-6">
-                    {% for note in notifications|slice:":3" %}
-                    <div class="flex gap-4">
-                        <div class="w-2 h-2 rounded-full mt-2 {% if note.is_urgent %}bg-red-500 animate-pulse{% else %}bg-sky-500{% endif %}"></div>
-                        <div>
-                            <p class="text-sm font-black text-slate-800">{{ note.title }}</p>
-                            <p class="text-xs text-slate-500 mt-1">{{ note.message|truncatechars:60 }}</p>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <p class="text-slate-400 text-sm italic">All caught up!</p>
-                    {% endfor %}
+    </div>
+</div>
+
+<!-- THE TWO MAGNIFICENT DUAL HUB PORTALS -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+    <!-- PORTAL A: PEDIATRIC DEVELOPMENT HUB -->
+    <div class="group relative bg-gradient-to-br from-indigo-950/80 via-slate-900/90 to-slate-950 rounded-[3rem] border border-indigo-500/20 p-10 hover:border-primary/40 hover:shadow-indigo-500/10 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden">
+        <div class="absolute -right-12 -top-12 w-48 h-48 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors"></div>
+        <div>
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-8">
+                <div class="w-16 h-16 bg-primary/10 border border-primary/20 text-primary text-3xl rounded-2xl flex items-center justify-center shadow-lg shadow-primary/10 group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-child-reaching animate-bounce"></i>
                 </div>
+                <span class="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-800/40 px-3 py-1 rounded-full border border-slate-800">Child Portal</span>
             </div>
             
-            <div class="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden">
-                <div class="absolute -right-8 -top-8 w-32 h-32 bg-sky-500/20 rounded-full blur-2xl"></div>
-                <h4 class="text-xl font-black mb-6 flex items-center gap-2">
-                    <i class="fas fa-bolt text-yellow-400"></i> Quick Resources
-                </h4>
-                <div class="space-y-4">
-                    <a href="{% url 'lactation_guide' %}" class="flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 transition-all group">
-                        <div class="w-10 h-10 bg-sky-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform text-xs">
-                            <i class="fas fa-baby"></i>
-                        </div>
-                        <span class="font-bold text-sm">Feeding Guide</span>
-                    </a>
-                    <a href="https://www.google.com/maps/search/hospitals+near+{{ user.locality.name|urlencode }}" target="_blank" class="flex items-center gap-4 p-4 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 transition-all group">
-                        <div class="w-10 h-10 bg-slate-700 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform text-xs">
-                            <i class="fas fa-hospital"></i>
-                        </div>
-                        <span class="font-bold text-sm">Nearby Hospital</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+            <h2 class="text-3xl font-black text-white mb-3">Pediatric Hub</h2>
+            <p class="text-xs text-slate-400 font-medium mb-6">Nurturing your children's physical growth, local immunizations, offline brain activities, and generating secure health passports.</p>
+            
+            <!-- Features List -->
+            <ul class="space-y-3 mb-8">
+                <li class="flex items-center gap-3 text-xs text-slate-300 font-semibold">
+                    <i class="fas fa-check-circle text-primary"></i> Age-Adaptive Development Quests
+                </li>
+                <li class="flex items-center gap-3 text-xs text-slate-300 font-semibold">
+                    <i class="fas fa-check-circle text-primary"></i> Bedtime Stories with Cartoon Stars
+                </li>
+                <li class="flex items-center gap-3 text-xs text-slate-300 font-semibold">
+                    <i class="fas fa-check-circle text-primary"></i> Dynamic Immunization Schedule
+                </li>
+                <li class="flex items-center gap-3 text-xs text-slate-300 font-semibold">
+                    <i class="fas fa-check-circle text-primary"></i> Exportable Superhero Health Passport
+                </li>
+            </ul>
 
-<!-- MATERNAL VIEW (HIDDEN) -->
-<div id="maternal-view" class="view-content hidden">
-    {% if mother %}
-    <div class="mb-8 flex items-center gap-4 bg-white p-6 rounded-[2rem] shadow-soft border border-slate-100">
-        <div class="w-16 h-16 bg-sky-100 rounded-2xl flex items-center justify-center text-3xl text-sky-500">
-            <i class="fas fa-person-breastfeeding"></i>
-        </div>
-        <div>
-            <h2 class="text-3xl font-black text-slate-800">
-                {% if children %}
-                    Mother of {% for child in children %}{{ child.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
-                {% else %}
-                    Maternal Dashboard
-                {% endif %}
-            </h2>
-            <p class="text-slate-500 font-bold uppercase text-xs tracking-widest mt-1">Delivery Date: {{ mother.delivery_date|date:"F d, Y" }}</p>
-        </div>
-    </div>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div class="lg:col-span-2 space-y-8">
-            <!-- Medix Style Diet Box -->
-            <div class="bg-white rounded-[3rem] shadow-soft border border-slate-100 p-10">
-                <div class="flex justify-between items-end mb-10">
-                    <div>
-                        <span class="text-sky-500 font-black text-xs uppercase tracking-widest">
-                            {% if maternal_context.day_number > 40 %}Maintenance Phase{% else %}Phase {{ maternal_context.phase }} Recovery{% endif %}
-                        </span>
-                        <h2 class="text-5xl font-black text-slate-800 mt-2">
-                            Day {% if maternal_context.day_number > 40 %}{{ maternal_context.day_number }}{% else %}{{ maternal_context.day_number }}{% endif %} Diet
-                        </h2>
-                        <p class="text-slate-400 font-bold mt-2 flex items-center gap-2">
-                            Personalized Meal Plan for {{ user.locality.get_region_tag_display|default:"General Recovery" }}
-                            <span class="text-[10px] px-2.5 py-0.5 rounded-full font-extrabold uppercase tracking-wide 
-                                {% if mother.diet_preference == 'veg' %}bg-green-100 text-green-700 border border-green-200{% else %}bg-amber-100 text-amber-800 border border-amber-200{% endif %}">
-                                {{ mother.get_diet_preference_display }}
-                            </span>
-                        </p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-4xl font-black text-slate-900">
-                            {% if maternal_context.day_number > 40 %}
-                                {{ maternal_context.day_number }}<span class="text-lg text-slate-300">+</span>
-                            {% else %}
-                                {{ maternal_context.day_number }}<span class="text-lg text-slate-300">/40</span>
-                            {% endif %}
-                        </p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
-                        <h4 class="text-sky-500 font-black text-xs uppercase mb-4 tracking-tighter">Breakfast</h4>
-                        <p class="text-lg font-black text-slate-800 mb-2">{{ maternal_context.recipe.breakfast_name }}</p>
-                        <p class="text-xs text-slate-500 leading-relaxed">{{ maternal_context.recipe.breakfast_details }}</p>
-                    </div>
-                    <div class="p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
-                        <h4 class="text-blue-500 font-black text-xs uppercase mb-4 tracking-tighter">Lunch</h4>
-                        <p class="text-lg font-black text-slate-800 mb-2">{{ maternal_context.recipe.lunch_name }}</p>
-                        <p class="text-xs text-slate-500 leading-relaxed">{{ maternal_context.recipe.lunch_details }}</p>
-                    </div>
-                    <div class="p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
-                        <h4 class="text-yellow-500 font-black text-xs uppercase mb-4 tracking-tighter">Evening Snack</h4>
-                        <p class="text-lg font-black text-slate-800 mb-2">{{ maternal_context.recipe.snack_name }}</p>
-                        <p class="text-xs text-slate-500 leading-relaxed">{{ maternal_context.recipe.snack_details }}</p>
-                    </div>
-                    <div class="p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
-                        <h4 class="text-indigo-500 font-black text-xs uppercase mb-4 tracking-tighter">Dinner</h4>
-                        <p class="text-lg font-black text-slate-800 mb-2">{{ maternal_context.recipe.dinner_name }}</p>
-                        <p class="text-xs text-slate-500 leading-relaxed">{{ maternal_context.recipe.dinner_details }}</p>
-                    </div>
-                </div>
-
-                {% if maternal_context.guide %}
-                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Practices & Care Guide -->
-                    <div class="p-6 bg-indigo-50 rounded-[2rem] border border-indigo-100">
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="w-10 h-10 bg-indigo-200 rounded-full flex items-center justify-center text-indigo-700">
-                                <i class="fas fa-hand-holding-medical"></i>
-                            </div>
-                            <h4 class="text-indigo-800 font-black text-sm uppercase tracking-tighter">Care & Feeding</h4>
-                        </div>
-                        <h5 class="font-bold text-slate-800 mb-2">{{ maternal_context.guide.title }}</h5>
-                        <p class="text-xs text-slate-600 mb-4">{{ maternal_context.guide.care_instructions }}</p>
-                        <div class="bg-white p-4 rounded-xl">
-                            <h6 class="font-bold text-[10px] text-indigo-500 uppercase mb-1">Feeding Tip</h6>
-                            <p class="text-[10px] text-slate-600 italic">{{ maternal_context.guide.mental_health_tip }}</p>
-                        </div>
-                    </div>
-
-                    <!-- Exercise Guide -->
-                    <div class="p-6 bg-emerald-50 rounded-[2rem] border border-emerald-100">
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="w-10 h-10 bg-emerald-200 rounded-full flex items-center justify-center text-emerald-700">
-                                <i class="fas fa-person-walking"></i>
-                            </div>
-                            <h4 class="text-emerald-800 font-black text-sm uppercase tracking-tighter">Exercise</h4>
-                        </div>
-                        <h5 class="font-bold text-slate-800 mb-2">{{ maternal_context.guide.exercise_title }}</h5>
-                        <p class="text-xs text-slate-600">{{ maternal_context.guide.exercise_desc }}</p>
-                    </div>
-                </div>
-                {% endif %}
-                
-                <div class="mt-10 flex gap-6 items-center p-8 bg-sky-500 rounded-[2rem] text-white shadow-xl shadow-sky-200">
-                    <div class="flex-1">
-                        <h4 class="font-black text-xl mb-1">Market Shopping List</h4>
-                        <p class="text-sky-100 font-medium">{{ maternal_context.recipe.ingredients }}</p>
-                    </div>
-                    <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl">
-                        <i class="fas fa-cart-shopping"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="space-y-8">
-            <!-- Vital Monitor Card -->
-            <div class="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden">
-                <div class="absolute -left-4 -bottom-4 w-24 h-24 bg-sky-500/10 rounded-full blur-xl"></div>
-                <h4 class="text-xl font-black mb-6 flex items-center gap-2">
-                    <i class="fas fa-heart-pulse text-red-400"></i> Vital Monitor
-                </h4>
-                
-                {% if messages %}
-                <div class="mb-6 space-y-2">
-                    {% for message in messages %}
-                    <div class="p-3 rounded-xl text-xs font-bold {% if message.tags == 'success' %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/30{% else %}bg-red-500/20 text-red-400 border border-red-500/30{% endif %}">
-                        {{ message }}
-                    </div>
+            <!-- Children Summary Roll -->
+            {% if children %}
+            <div class="bg-slate-950/60 rounded-2xl border border-slate-800/80 p-4 mb-6">
+                <p class="text-[9px] font-bold uppercase text-slate-500 mb-2">Registered Children</p>
+                <div class="flex flex-wrap gap-2">
+                    {% for child in children %}
+                    <span class="text-xs bg-slate-900 border border-slate-800 px-3 py-1 rounded-lg text-slate-300 font-black">
+                        {{ child.name }} ({{ child.date_of_birth|timesince }})
+                    </span>
                     {% endfor %}
                 </div>
-                {% endif %}
-
-                <form action="{% url 'record_recovery_metric' %}" method="post" class="space-y-4">
-                    {% csrf_token %}
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">Weight (kg)</label>
-                            <input type="number" step="0.1" name="weight" class="bg-transparent text-white text-xl font-black outline-none w-full" placeholder="0.0" value="{{ mother.current_weight|default:'' }}">
-                        </div>
-                        <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">BP (Sys/Dia)</label>
-                            <div class="flex items-center gap-1">
-                                <input type="number" name="systolic_bp" class="bg-transparent text-white text-xl font-black outline-none w-12" placeholder="120" value="{{ mother.last_systolic_bp|default:'' }}">
-                                <span class="text-slate-500">/</span>
-                                <input type="number" name="diastolic_bp" class="bg-transparent text-white text-xl font-black outline-none w-12" placeholder="80">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">Are you feeling any of these?</label>
-                        <div class="grid grid-cols-2 gap-2 mt-2">
-                            <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" name="symptoms" value="fever" class="hidden peer">
-                                <div class="w-4 h-4 rounded border border-white/20 peer-checked:bg-sky-500 peer-checked:border-sky-500 transition-all flex items-center justify-center text-[10px]">
-                                    <i class="fas fa-check text-white opacity-0 peer-checked:opacity-100"></i>
-                                </div>
-                                <span class="text-[10px] text-slate-400 group-hover:text-white transition-colors">Fever</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" name="symptoms" value="heavy_bleeding" class="hidden peer">
-                                <div class="w-4 h-4 rounded border border-white/20 peer-checked:bg-sky-500 peer-checked:border-sky-500 transition-all flex items-center justify-center text-[10px]">
-                                    <i class="fas fa-check text-white opacity-0 peer-checked:opacity-100"></i>
-                                </div>
-                                <span class="text-[10px] text-slate-400 group-hover:text-white transition-colors">Bleeding</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" name="symptoms" value="severe_headache" class="hidden peer">
-                                <div class="w-4 h-4 rounded border border-white/20 peer-checked:bg-sky-500 peer-checked:border-sky-500 transition-all flex items-center justify-center text-[10px]">
-                                    <i class="fas fa-check text-white opacity-0 peer-checked:opacity-100"></i>
-                                </div>
-                                <span class="text-[10px] text-slate-400 group-hover:text-white transition-colors">Headache</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer group">
-                                <input type="checkbox" name="symptoms" value="pain" class="hidden peer">
-                                <div class="w-4 h-4 rounded border border-white/20 peer-checked:bg-sky-500 peer-checked:border-sky-500 transition-all flex items-center justify-center text-[10px]">
-                                    <i class="fas fa-check text-white opacity-0 peer-checked:opacity-100"></i>
-                                </div>
-                                <span class="text-[10px] text-slate-400 group-hover:text-white transition-colors">Severe Pain</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="w-full bg-sky-500 hover:bg-sky-400 text-white py-4 rounded-2xl font-black transition-all shadow-xl shadow-sky-500/20">
-                        Run Health Integrity Check
-                    </button>
-                </form>
             </div>
+            {% endif %}
+        </div>
+        
+        <a href="{% url 'children_dashboard' %}" class="w-full bg-primary hover:bg-sky-400 text-slate-950 text-center py-4 rounded-2xl font-black transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 flex items-center justify-center gap-2">
+            Explore Pediatric Hub <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
 
-            <!-- Mental Health Shield Card -->
-            <div class="bg-indigo-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden">
-                <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/20 rounded-full blur-xl"></div>
-                <h4 class="text-xl font-black mb-6 flex items-center gap-2">
-                    <i class="fas fa-shield-heart text-indigo-300"></i> Mental Well-being
-                </h4>
-                <div class="space-y-6">
-                    <div class="p-4 bg-white/5 rounded-2xl border border-white/10">
-                        <h5 class="text-indigo-300 font-bold text-[10px] uppercase mb-2">Today's Affirmation</h5>
-                        <p class="text-sm italic text-indigo-100">"{{ maternal_context.daily_affirmation }}"</p>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex items-start gap-3">
-                            <div class="w-6 h-6 bg-emerald-500/20 rounded-full flex items-center justify-center text-emerald-400 flex-shrink-0">
-                                <i class="fas fa-leaf text-[10px]"></i>
-                            </div>
-                            <p class="text-[10px] text-indigo-200">{{ maternal_context.daily_tip }}</p>
-                        </div>
-                    </div>
-                    <a href="#" class="block text-center py-3 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-bold transition-all border border-white/10">
-                        Connect with Support Circle
-                    </a>
+    <!-- PORTAL B: MATERNAL RECOVERY & WELLNESS HUB -->
+    <div class="group relative bg-gradient-to-br from-rose-950/40 via-slate-900/90 to-slate-950 rounded-[3rem] border border-rose-500/20 p-10 hover:border-rose-500/40 hover:shadow-rose-500/5 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden">
+        <div class="absolute -right-12 -top-12 w-48 h-48 bg-rose-500/5 rounded-full blur-3xl group-hover:bg-rose-500/10 transition-colors"></div>
+        <div>
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-8">
+                <div class="w-16 h-16 bg-rose-500/10 border border-rose-500/20 text-rose-500 text-3xl rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/10 group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-person-breastfeeding animate-pulse"></i>
                 </div>
+                <span class="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-800/40 px-3 py-1 rounded-full border border-slate-800">Mother Portal</span>
+            </div>
+            
+            <h2 class="text-3xl font-black text-white mb-3">Maternal Recovery</h2>
+            <p class="text-xs text-slate-400 font-medium mb-6">Regionalized 40-day postpartum customized nutrition plans (Veg/Non-Veg), weekly core workout plans, and mental wellness guidance.</p>
+            
+            <!-- Features List -->
+            <ul class="space-y-3 mb-8">
+                <li class="flex items-center gap-3 text-xs text-slate-300 font-semibold">
+                    <i class="fas fa-check-circle text-rose-500"></i> regionalized 40-day Nutrition Engine (Veg/Non-Veg)
+                </li>
+                <li class="flex items-center gap-3 text-xs text-slate-300 font-semibold">
+                    <i class="fas fa-check-circle text-rose-500"></i> Postpartum Core & Pelvic Floor Exercises
+                </li>
+                <li class="flex items-center gap-3 text-xs text-slate-300 font-semibold">
+                    <i class="fas fa-check-circle text-rose-500"></i> Mental Well-being Tip Rotation
+                </li>
+                <li class="flex items-center gap-3 text-xs text-slate-300 font-semibold">
+                    <i class="fas fa-check-circle text-rose-500"></i> Red Alert Warnings & BP Loggers
+                </li>
+            </ul>
+
+            <!-- Mother Summary Roll -->
+            <div class="bg-slate-950/60 rounded-2xl border border-slate-800/80 p-4 mb-6">
+                <p class="text-[9px] font-bold uppercase text-slate-500 mb-2">Active Care Status</p>
+                {% if mother %}
+                <div class="flex items-center gap-2">
+                    <span class="text-xs bg-slate-900 border border-slate-800 px-3 py-1 rounded-lg text-slate-300 font-black">
+                        Day {{ maternal_context.day_number }} recovery
+                    </span>
+                    <span class="text-xs px-2.5 py-0.5 rounded-lg font-black uppercase text-[10px] 
+                        {% if mother.diet_preference == 'veg' %}bg-green-500/20 text-green-400 border border-green-500/30{% else %}bg-amber-500/20 text-amber-400 border border-amber-500/30{% endif %}">
+                        {{ mother.get_diet_preference_display }}
+                    </span>
+                </div>
+                {% else %}
+                <span class="text-xs italic text-slate-500">No profile initialized yet.</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <a href="{% url 'maternal_dashboard' %}" class="w-full bg-slate-100 hover:bg-white text-slate-950 text-center py-4 rounded-2xl font-black transition-all shadow-lg flex items-center justify-center gap-2">
+            {% if mother %}Launch Maternal Recovery{% else %}Setup Maternal Profile{% endif %} <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+</div>
+
+<!-- BOTTOM HIGHLIGHT SECTION: LIVE ALERTS & INSIGHTS FEED -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+    <!-- Main Info column -->
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-slate-900/50 rounded-[2.5rem] border border-slate-850 p-8 shadow-inner">
+            <h3 class="text-lg font-black text-white mb-6 flex items-center gap-2">
+                <i class="fas fa-bullhorn text-primary"></i> Active Health Notifications
+            </h3>
+            <div class="space-y-4">
+                {% for note in notifications|slice:":4" %}
+                <div class="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-4 flex gap-4 items-start transition-all hover:bg-slate-900 hover:border-slate-700">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0
+                        {% if note.is_urgent %}bg-red-500/20 text-red-500 animate-pulse border border-red-500/30{% else %}bg-sky-500/20 text-sky-400{% endif %}">
+                        <i class="fas {% if note.is_urgent %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %} text-xs"></i>
+                    </div>
+                    <div>
+                        <h5 class="text-sm font-black text-white">{{ note.title }}</h5>
+                        <p class="text-xs text-slate-400 mt-1">{{ note.message }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="p-8 text-center text-slate-500 italic text-xs">
+                    <i class="fas fa-check-circle text-emerald-500 text-lg mb-2 block"></i>
+                    All systems secure. No health notifications pending.
+                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
-    {% else %}
-    <div class="bg-white rounded-[3rem] p-20 text-center shadow-soft border border-slate-100">
-        <h2 class="text-5xl font-black text-slate-800 mb-6">Initialize Maternal Care.</h2>
-        <p class="text-slate-500 max-w-lg mx-auto mb-10 text-lg">Access your 40-day recovery roadmap and specialized nutrition engine.</p>
-        <a href="{% url 'manage_mother_profile' %}" class="bg-slate-900 text-white px-12 py-5 rounded-2xl font-black text-xl shadow-2xl transition-all transform hover:scale-105">
-            Setup My Profile
-        </a>
+    
+    <!-- Sidebar actions column -->
+    <div class="space-y-6">
+        <div class="bg-indigo-900/20 rounded-[2.5rem] p-8 text-white border border-indigo-500/10 shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/20 rounded-full blur-xl"></div>
+            <h4 class="text-lg font-black mb-6 flex items-center gap-2">
+                <i class="fas fa-star text-yellow-400"></i> Mother Wellness Corner
+            </h4>
+            {% if mother %}
+            <div class="space-y-4">
+                <div class="p-4 bg-slate-900/80 rounded-2xl border border-slate-800">
+                    <h5 class="text-indigo-400 font-bold text-[9px] uppercase mb-1">Affirmation of the Day</h5>
+                    <p class="text-xs italic text-slate-300">"{{ maternal_context.daily_affirmation }}"</p>
+                </div>
+                <div class="p-4 bg-slate-900/80 rounded-2xl border border-slate-800">
+                    <h5 class="text-indigo-400 font-bold text-[9px] uppercase mb-1">Support Tip</h5>
+                    <p class="text-xs text-slate-300">{{ maternal_context.daily_tip }}</p>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center p-6 text-slate-500 italic text-xs">
+                Setup Mother Profile to unlock daily postpartum affirmations and support tips.
+            </div>
+            {% endif %}
+        </div>
     </div>
-    {% endif %}
 </div>
-
-<script>
-    function switchView(view) {
-        const childView = document.getElementById('child-view');
-        const maternalView = document.getElementById('maternal-view');
-        const targetView = (view === 'child') ? childView : maternalView;
-        const otherView = (view === 'child') ? maternalView : childView;
-        
-        // Performance optimization: only swap if needed
-        if (targetView.classList.contains('hidden')) {
-            otherView.classList.add('hidden');
-            targetView.classList.remove('hidden');
-        }
-        
-        // Update Toggle Buttons
-        const btns = document.querySelectorAll('button[onclick^="switchView"]');
-        btns.forEach(btn => {
-            if (btn.getAttribute('onclick').includes(view)) {
-                btn.classList.add('bg-sky-500', 'text-white', 'shadow-lg', 'shadow-sky-200');
-                btn.classList.remove('text-slate-500', 'hover:bg-slate-50');
-            } else {
-                btn.classList.remove('bg-sky-500', 'text-white', 'shadow-lg', 'shadow-sky-200');
-                btn.classList.add('text-slate-500', 'hover:bg-slate-50');
-            }
-        });
-        
-        // Robust smooth scroll
-        targetView.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-</script>
 {% endblock %}

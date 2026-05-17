@@ -33,21 +33,43 @@ def parent_dashboard(request):
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     urgent_count = notifications.filter(is_urgent=True, is_read=False).count()
     
-    # Maternal Context
     mother = getattr(request.user, 'mother_profile', None)
     maternal_context = None
     if mother:
         maternal_context = get_postpartum_context(mother)
-    
-    metric_form = RecoveryMetricForm()
-    
+        
     return render(request, 'health/parent_dashboard.html', {
         'children': children,
         'notifications': notifications,
         'urgent_count': urgent_count,
         'mother': mother,
         'maternal_context': maternal_context,
-        'metric_form': metric_form
+    })
+
+@login_required
+@user_passes_test(is_parent)
+def children_dashboard(request):
+    children = ChildProfile.objects.filter(parent=request.user).order_by('-created_at')
+    return render(request, 'health/children_dashboard.html', {
+        'children': children,
+    })
+
+@login_required
+@user_passes_test(is_parent)
+def maternal_dashboard(request):
+    mother = getattr(request.user, 'mother_profile', None)
+    if not mother:
+        return redirect('manage_mother_profile')
+        
+    maternal_context = get_postpartum_context(mother)
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    metric_form = RecoveryMetricForm()
+    
+    return render(request, 'health/maternal_dashboard.html', {
+        'mother': mother,
+        'maternal_context': maternal_context,
+        'notifications': notifications,
+        'metric_form': metric_form,
     })
 
 def get_oracle_insights(locality):

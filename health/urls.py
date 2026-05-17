@@ -5,6 +5,8 @@ from . import views
 urlpatterns = [
     path('', views.index, name='index'),
     path('parent/', views.parent_dashboard, name='parent_dashboard'),
+    path('parent/children/', views.children_dashboard, name='children_dashboard'),
+    path('parent/maternal/', views.maternal_dashboard, name='maternal_dashboard'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     
     # Auth
