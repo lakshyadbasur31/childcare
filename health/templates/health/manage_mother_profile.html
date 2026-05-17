@@ -1,0 +1,137 @@
+{% extends 'health/base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-8">
+    <div class="mb-8 flex items-center gap-4">
+        <a href="{% url 'parent_dashboard' %}" class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-500 shadow-soft hover:text-primary hover:shadow-md transition-all">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Postpartum Recovery Profile</h1>
+            <p class="text-slate-500 font-medium">Start your healing journey alongside your child.</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-[2rem] shadow-dribbble border border-slate-100 p-8 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-pastel-red rounded-full opacity-30 blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+
+        <form method="post" class="space-y-6 relative z-10">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">Delivery Date</label>
+                    <input type="date" name="{{ form.delivery_date.name }}" value="{{ form.delivery_date.value|date:'Y-m-d'|default:'' }}" required 
+                           class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 font-medium">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">Delivery Type</label>
+                    <select name="{{ form.delivery_type.name }}" required 
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 font-medium appearance-none">
+                        {% for value, label in form.fields.delivery_type.choices %}
+                            <option value="{{ value }}" {% if form.delivery_type.value == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">Current Weight</label>
+                    <input type="number" step="0.1" name="{{ form.current_weight.name }}" value="{{ form.current_weight.value|default:'' }}"
+                           class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 font-medium"
+                           placeholder="0.0">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">Weight Unit</label>
+                    <select name="{{ form.weight_unit.name }}" 
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 font-medium appearance-none">
+                        {% for value, label in form.fields.weight_unit.choices %}
+                            <option value="{{ value }}" {% if form.weight_unit.value == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Locality with GPS -->
+                <div class="md:col-span-2 mt-4 pt-6 border-t border-slate-100">
+                    <div class="flex justify-between items-end mb-4">
+                        <div>
+                            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fas fa-location-dot text-primary"></i> Locality Selection
+                            </h3>
+                            <p class="text-[10px] text-slate-500">Essential for your regional 40-day recovery diet.</p>
+                        </div>
+                        <button type="button" onclick="detectGPSLocation()" id="gps-btn" class="text-[10px] font-black text-primary bg-indigo-50 px-3 py-1 rounded-full uppercase hover:bg-primary hover:text-white transition-all flex items-center gap-1">
+                            <i class="fas fa-location-crosshairs"></i> Auto-Detect via GPS
+                        </button>
+                    </div>
+                    
+                    <select name="locality" id="id_locality" required 
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 font-medium appearance-none">
+                        <option value="">Select Locality...</option>
+                        {% for loc in localities %}
+                            <option value="{{ loc.id }}" {% if user.locality_id == loc.id %}selected{% endif %}>{{ loc.name }} ({{ loc.get_region_tag_display }})</option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-[10px] text-slate-500 mt-2" id="gps-status"></p>
+                </div>
+            </div>
+
+            <script>
+                function detectGPSLocation() {
+                    const btn = document.getElementById('gps-btn');
+                    const status = document.getElementById('gps-status');
+                    const localitySelect = document.getElementById('id_locality');
+
+                    if (!navigator.geolocation) {
+                        alert("Geolocation is not supported by your browser");
+                        return;
+                    }
+
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
+                    btn.disabled = true;
+
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+
+                        fetch("{% url 'detect_locality' %}?lat=" + lat + "&lon=" + lon)
+                            .then(async response => {
+                                    const data = await response.json();
+                                    if (response.ok) {
+                                        localitySelect.value = data.id;
+                                        status.innerHTML = `<i class="fas fa-check-circle text-green-500"></i> Successfully detected: <b>${data.name}</b> (${data.region})`;
+                                        status.className = "text-[10px] text-green-600 mt-2";
+                                        btn.innerHTML = '<i class="fas fa-check"></i> Location Set';
+                                        btn.className = "text-[10px] font-black text-white bg-green-500 px-3 py-1 rounded-full uppercase pointer-events-none";
+                                    } else {
+                                        status.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500"></i> ${data.error || 'Could not detect locality'}`;
+                                        btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Retry GPS';
+                                        btn.disabled = false;
+                                    }
+                                })
+                                .catch(err => {
+                                    status.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500"></i> Detection failed. Check your internet or GPS settings.`;
+                                    btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Retry GPS';
+                                    btn.disabled = false;
+                                });
+                        },
+                        () => {
+                            status.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500"></i> Permission denied.`;
+                            btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Retry GPS';
+                            btn.disabled = false;
+                        }
+                    );
+                }
+            </script>
+
+            <div class="mt-8 pt-6 border-t border-slate-100">
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5 text-lg flex justify-center items-center gap-2">
+                    Initialize Recovery Journey <i class="fas fa-heart-pulse"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

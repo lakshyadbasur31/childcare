@@ -1,0 +1,77 @@
+{% extends 'health/base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-12 py-12">
+    <!-- Header Section -->
+    <div class="text-center space-y-4">
+        <span class="text-sky-500 font-black text-xs uppercase tracking-[0.2em]">Maternal Wellness Engine</span>
+        <h1 class="text-6xl font-black text-slate-800 tracking-tight leading-none">Lactation & <br/><span class="text-sky-500">Feeding Guide.</span></h1>
+        <p class="text-lg text-slate-500 max-w-2xl mx-auto font-medium">Expert-curated practices for successful breastfeeding and nutritional support during your recovery journey.</p>
+    </div>
+
+    <!-- Core Guide Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Card 1: Foundations -->
+        <div class="bg-white rounded-[2.5rem] p-10 shadow-soft border border-slate-100 hover:shadow-xl transition-all border-t-8 border-t-sky-500">
+            <div class="w-16 h-16 bg-sky-50 rounded-2xl flex items-center justify-center text-3xl text-sky-500 mb-8">
+                <i class="fas fa-person-breastfeeding"></i>
+            </div>
+            <h3 class="text-2xl font-black text-slate-800 mb-4">Latching Technique</h3>
+            <p class="text-slate-500 leading-relaxed mb-6">Ensure a deep latch by bringing the baby's chin to the breast first. Their mouth should cover a large portion of the areola, not just the nipple.</p>
+            <ul class="space-y-3 text-sm font-bold text-slate-700">
+                <li class="flex items-center gap-3"><i class="fas fa-check text-sky-500"></i> Belly-to-belly contact</li>
+                <li class="flex items-center gap-3"><i class="fas fa-check text-sky-500"></i> Nose across from the nipple</li>
+                <li class="flex items-center gap-3"><i class="fas fa-check text-sky-500"></i> Wide open mouth</li>
+            </ul>
+        </div>
+
+        <!-- Card 2: Hydration -->
+        <div class="bg-slate-900 rounded-[2.5rem] p-10 shadow-2xl text-white border-t-8 border-t-blue-500">
+            <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-3xl text-blue-400 mb-8">
+                <i class="fas fa-droplet"></i>
+            </div>
+            <h3 class="text-2xl font-black mb-4">Fluid Intelligence</h3>
+            <p class="text-slate-400 leading-relaxed mb-6">Breast milk is over 80% water. Maintaining high hydration levels is critical for milk volume and your own energy recovery.</p>
+            <div class="bg-white/5 p-6 rounded-2xl border border-white/10">
+                <p class="text-xs font-bold text-blue-400 uppercase mb-2">Daily Target</p>
+                <p class="text-3xl font-black">3.5 - 4.0 <span class="text-sm font-medium text-slate-500">Liters</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dietary Support Section -->
+    <div class="bg-white rounded-[3rem] p-12 shadow-soft border border-slate-100 relative overflow-hidden">
+        <div class="absolute right-0 top-0 w-64 h-64 bg-emerald-50 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+        <div class="relative z-10">
+            <h3 class="text-3xl font-black text-slate-800 mb-8 flex items-center gap-4">
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                Galactagogues: Milk-Boosting Foods
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                    <h4 class="font-black text-slate-800 mb-2">Fenugreek (Methi)</h4>
+                    <p class="text-xs text-slate-500">A time-tested regional staple that naturally stimulates milk production glands.</p>
+                </div>
+                <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                    <h4 class="font-black text-slate-800 mb-2">Garlic & Ginger</h4>
+                    <p class="text-xs text-slate-500">Anti-inflammatory agents that help in postpartum healing and lactation flow.</p>
+                </div>
+                <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                    <h4 class="font-black text-slate-800 mb-2">Oats & Daliya</h4>
+                    <p class="text-xs text-slate-500">High iron content helps combat postpartum anemia and supports supply.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Dashboard -->
+    <div class="text-center pt-8">
+        <a href="{% url 'parent_dashboard' %}" class="inline-flex items-center gap-3 text-slate-400 hover:text-slate-800 font-bold transition-all group">
+            <i class="fas fa-arrow-left group-hover:-translate-x-2 transition-transform"></i>
+            Back to Health Guardian Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

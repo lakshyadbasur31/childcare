@@ -1,82 +1,106 @@
 {% extends 'health/base.html' %}
 
 {% block content %}
-<!-- Child Header Profile -->
+<!-- Bharat-Health Guardian: Age-Adaptive Header -->
 <div class="bg-white rounded-[2rem] p-8 shadow-dribbble border border-slate-100 flex justify-between items-center mb-8 relative overflow-hidden">
-    <!-- Abstract Background Shape -->
-    <div class="absolute right-0 top-0 w-64 h-64 bg-gradient-to-br from-primary/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/3"></div>
-    
+    <!-- Adaptive Theme Background -->
+    <div class="absolute right-0 top-0 w-64 h-64 rounded-full -translate-y-1/2 translate-x-1/3 
+        {% if brain_context.tier == 'infant' %}bg-gradient-to-br from-primary/10 to-transparent
+        {% elif brain_context.tier == 'early' %}bg-gradient-to-br from-green-400/10 to-transparent
+        {% else %}bg-gradient-to-br from-slate-900/10 to-transparent{% endif %}">
+    </div>
+
     <div class="flex items-center gap-6 z-10">
-        <div class="w-24 h-24 bg-pastel-blue rounded-full flex items-center justify-center text-4xl text-primary shadow-soft">
-            <i class="fas fa-child"></i>
+        <div class="w-24 h-24 rounded-full flex items-center justify-center text-4xl shadow-soft bg-sky-50 text-sky-500 border-4 border-white">
+            <i class="fas {% if brain_context.tier == 'infant' %}fa-baby{% elif brain_context.tier == 'early' %}fa-child-reaching{% else %}fa-user-graduate{% endif %}"></i>
         </div>
         <div>
             <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">{{ child.name }}</h1>
-            <p class="text-slate-500 font-medium">DOB: {{ child.date_of_birth }} &bull; {{ child.locality.name }}</p>
+            <p class="text-slate-500 font-medium">
+                {{ age_months }} Months Old &bull; 
+                {{ child.locality.district }}, {{ child.locality.state|default:"India" }}
+            </p>
+            <div class="flex gap-4 mt-2 items-center">
+                <span class="text-xs font-bold px-3 py-1 bg-slate-800 rounded-full text-slate-300 border border-slate-700">
+                    <i class="fas fa-weight-hanging mr-1 text-primary"></i> <span id="display-weight">{{ display_weight|floatformat:1 }}</span> <span id="display-weight-unit">{{ child.weight_unit }}</span>
+                </span>
+                <span class="text-xs font-bold px-3 py-1 bg-slate-800 rounded-full text-slate-300 border border-slate-700">
+                    <i class="fas fa-ruler-vertical mr-1 text-primary"></i> <span id="display-height">{{ display_height|floatformat:1 }}</span> <span id="display-height-unit">{{ child.height_unit }}</span>
+                </span>
+                <select id="weight-toggle" class="bg-slate-900 border border-slate-800 text-slate-300 rounded px-2 py-1 text-xs outline-none ml-2 cursor-pointer transition-colors hover:border-slate-600 focus:border-primary" onchange="toggleUnits('{{ child.id }}')">
+                    <option value="kg" {% if child.weight_unit == 'kg' %}selected{% endif %}>kg</option>
+                    <option value="g" {% if child.weight_unit == 'g' %}selected{% endif %}>g</option>
+                </select>
+                <select id="height-toggle" class="bg-slate-900 border border-slate-800 text-slate-300 rounded px-2 py-1 text-xs outline-none cursor-pointer transition-colors hover:border-slate-600 focus:border-primary" onchange="toggleUnits('{{ child.id }}')">
+                    <option value="cm" {% if child.height_unit == 'cm' %}selected{% endif %}>cm</option>
+                    <option value="m" {% if child.height_unit == 'm' %}selected{% endif %}>m</option>
+                </select>
+            </div>
         </div>
     </div>
-    <div class="z-10">
-        <a href="{% url 'download_passport' child.id %}" class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-slate-300 transition-transform hover:-translate-y-0.5 inline-flex items-center gap-2">
-            <i class="fas fa-download"></i> Health Passport
+    
+    <div class="z-10 flex flex-col gap-2">
+        <a href="{% url 'download_passport' child.id %}"
+            class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-transform hover:-translate-y-0.5 inline-flex items-center gap-2">
+            <i class="fas fa-file-medical"></i> Bharat Health Passport
         </a>
+        {% if brain_context.tier == 'infant' %}
+        <div class="bg-pastel-yellow/50 px-4 py-2 rounded-lg border border-yellow-200 text-[10px] font-bold text-yellow-800">
+            <i class="fas fa-shield-heart mr-1"></i> FOUNDATIONS MODE ACTIVE
+        </div>
+        {% endif %}
     </div>
 </div>
 
 <!-- Navigation Tabs -->
 <div class="flex gap-4 mb-8 overflow-x-auto pb-2 scrollbar-hide tab-links">
-    <button onclick="openTab(event, 'nutrition')" class="tab-btn bg-primary text-white px-6 py-3 rounded-full font-bold shadow-md shadow-indigo-200 whitespace-nowrap active">Nutrition Engine</button>
-    <button onclick="openTab(event, 'immunization')" class="tab-btn bg-white hover:bg-slate-50 text-slate-600 px-6 py-3 rounded-full font-semibold border border-slate-200 whitespace-nowrap transition-colors">Immunization</button>
-    <button onclick="openTab(event, 'growth')" class="tab-btn bg-white hover:bg-slate-50 text-slate-600 px-6 py-3 rounded-full font-semibold border border-slate-200 whitespace-nowrap transition-colors">Growth Tracking</button>
-    <button onclick="openTab(event, 'games')" class="tab-btn bg-white hover:bg-slate-50 text-slate-600 px-6 py-3 rounded-full font-semibold border border-slate-200 whitespace-nowrap transition-colors">Logic Games</button>
+    <button onclick="openTab(event, 'nutrition')" class="tab-btn bg-slate-800 text-white px-6 py-3 rounded-full font-bold shadow-md shadow-slate-900/50 border border-slate-700 whitespace-nowrap active relative">
+        <i class="fas fa-bowl-food mr-2"></i> Mentor Engine
+        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1.5 bg-sky-400 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.8)] tab-indicator block"></div>
+    </button>
+    <button onclick="openTab(event, 'brain')" class="tab-btn bg-slate-900/80 hover:bg-slate-800 text-slate-300 px-6 py-3 rounded-full font-semibold border border-slate-800 whitespace-nowrap transition-colors relative">
+        <i class="fas fa-brain-circuit mr-2"></i> Brain Quest
+        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1.5 bg-sky-400 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.8)] tab-indicator hidden"></div>
+    </button>
+    <button onclick="openTab(event, 'immunization')" class="tab-btn bg-slate-900/80 hover:bg-slate-800 text-slate-300 px-6 py-3 rounded-full font-semibold border border-slate-800 whitespace-nowrap transition-colors relative">
+        <i class="fas fa-shield-virus mr-2"></i> Immunization
+        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1.5 bg-sky-400 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.8)] tab-indicator hidden"></div>
+    </button>
+    <button onclick="openTab(event, 'growth')" class="tab-btn bg-slate-900/80 hover:bg-slate-800 text-slate-300 px-6 py-3 rounded-full font-semibold border border-slate-800 whitespace-nowrap transition-colors relative">
+        <i class="fas fa-chart-line mr-2"></i> Growth
+        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1.5 bg-sky-400 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.8)] tab-indicator hidden"></div>
+    </button>
 </div>
 
-<!-- Dribbble-Style Nutrition Engine -->
+<!-- Mentor Engine Tab -->
 <div id="nutrition" class="space-y-8 tab-content block">
-    
-    <!-- AI Invisible Assistant Banner -->
-    <div class="bg-gradient-to-r from-pastel-yellow to-white p-6 rounded-[2rem] border border-yellow-200 shadow-sm flex items-start gap-4">
-        <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-accent shadow-sm flex-shrink-0">
-            <i class="fas fa-magic"></i>
-        </div>
-        <div>
-            <h3 class="text-lg font-bold text-yellow-800">Invisible Assistant Active</h3>
-            <p class="text-slate-600 text-sm mt-1">
-                Your meal plan has been dynamically adjusted based on today's simulated market prices. We prioritized affordable, high-nutrition options.
-            </p>
+    <!-- Mentor Banner -->
+    <div class="bg-gradient-to-r from-slate-900 to-slate-800 p-8 rounded-[2rem] text-white shadow-xl relative overflow-hidden">
+        <div class="absolute right-0 bottom-0 opacity-10 text-[10rem] rotate-12"><i class="fas fa-quote-right"></i></div>
+        <div class="flex items-start gap-6 relative z-10">
+            <div class="w-16 h-16 bg-white/10 rounded-2xl backdrop-blur flex items-center justify-center text-3xl">
+                <i class="fas fa-brain-circuit"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold mb-2">Bharat-Guardian Insight</h3>
+                <p class="text-slate-300 text-sm leading-relaxed max-w-2xl">
+                    {{ recommendation.logic_summary }}
+                    {% if age_months < 6 %}
+                    <br><strong class="text-yellow-400">Mentor Tip:</strong> In this foundation phase, warmth and exclusive breastfeeding are your child's primary armor.
+                    {% endif %}
+                </p>
+            </div>
         </div>
     </div>
 
-    <!-- Analytics & Shopping Grid -->
+    <!-- Diet Plan -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        <!-- Left: Donut Chart -->
-        <div class="bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100 flex flex-col justify-center items-center">
-            <h3 class="text-lg font-bold text-slate-800 mb-6 self-start w-full">Nutrition Breakdown</h3>
-            <div class="w-48 h-48 relative">
-                <canvas id="nutritionChart"></canvas>
-                <div class="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
-                    <span class="text-2xl font-extrabold text-slate-800">100%</span>
-                    <span class="text-xs font-bold text-slate-400">BALANCED</span>
-                </div>
-            </div>
-            <div class="w-full mt-8 flex justify-between text-sm font-semibold text-slate-500">
-                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#10b981]"></div> Protein</div>
-                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#f59e0b]"></div> Carbs</div>
-                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-[#6366f1]"></div> Vitamins</div>
-            </div>
-        </div>
-
-        <!-- Right: Smart Meal Cards (Swiper Carousel) -->
-        <div class="lg:col-span-2 bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100 overflow-hidden relative">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-lg font-bold text-slate-800">7-Day Smart Diet Plan</h3>
-                <div class="flex gap-2">
-                    <button class="swiper-button-prev-custom w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"><i class="fas fa-chevron-left"></i></button>
-                    <button class="swiper-button-next-custom w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"><i class="fas fa-chevron-right"></i></button>
-                </div>
-            </div>
-
-            <!-- Swiper Container -->
+        <div class="lg:col-span-2 bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100">
+            <h3 class="text-lg font-bold text-slate-800 mb-6 flex justify-between items-center">
+                7-Day Regional Meal Plan
+                <span class="text-xs font-bold text-primary bg-indigo-50 px-3 py-1 rounded-full uppercase">{{ child.locality.region_tag }} STAPLES</span>
+            </h3>
+            
             <div class="swiper nutritionSwiper !pb-10">
                 <div class="swiper-wrapper">
                     {% for day, meals in diet_plan.items %}
@@ -84,293 +108,408 @@
                         <div class="bg-slate-50 rounded-2xl p-6 border border-slate-200 h-full">
                             <h4 class="text-xl font-extrabold text-primary mb-4">{{ day|upper }}</h4>
                             <div class="space-y-4">
-                                {% for meal in meals %}
-                                <div class="flex items-start gap-4">
-                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm {% if meal.meal == 'Breakfast' %}bg-orange-100 text-orange-600{% elif 'Lunch' in meal.meal %}bg-blue-100 text-blue-600{% elif 'Dinner' in meal.meal %}bg-indigo-100 text-indigo-600{% else %}bg-green-100 text-green-600{% endif %}">
-                                        {{ meal.time|slice:":2" }}
+                                {% if meals.0.meal %}
+                                    {% for meal in meals %}
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-12 h-10 rounded-xl flex items-center justify-center font-bold text-[10px] uppercase bg-white border border-slate-200 text-slate-600">
+                                            {{ meal.time }}
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ meal.meal }}</p>
+                                            <p class="text-slate-800 font-semibold">{{ meal.food }}</p>
+                                        </div>
                                     </div>
-                                    <div class="flex-1">
-                                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ meal.meal }}</p>
-                                        <p class="text-slate-800 font-semibold">{{ meal.food }}</p>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="flex items-center gap-4 bg-green-50 p-4 rounded-xl border border-green-100">
+                                        <div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-baby"></i>
+                                        </div>
+                                        <p class="text-green-800 font-bold text-sm">{{ meals }}</p>
                                     </div>
-                                </div>
-                                {% endfor %}
+                                {% endif %}
                             </div>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
-                <div class="swiper-pagination !bottom-0"></div>
+                <div class="swiper-pagination"></div>
             </div>
         </div>
-    </div>
 
-    <!-- Smart Shopping List -->
-    <div>
-        <h3 class="text-xl font-bold text-slate-800 mb-6">Smart Shopping List</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {% for food in recommendation.recommended_foods.all %}
-            <div class="bg-white rounded-[2rem] overflow-hidden shadow-dribbble border border-slate-100 group hover:-translate-y-1 transition-transform">
-                <div class="h-32 bg-gradient-to-br from-pastel-green to-pastel-blue relative flex items-center justify-center text-5xl text-white/80">
-                    <i class="fas {% if food.category == 'protein' %}fa-egg{% elif 'millet' in food.category %}fa-seedling{% elif 'greens' in food.category %}fa-leaf{% else %}fa-bowl-food{% endif %}"></i>
-                    
-                    {% if food.is_low_cost %}
-                    <div class="absolute top-4 right-4 bg-red-500 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-md uppercase tracking-wider">
-                        <i class="fas fa-tag mr-1"></i> Smart Saver
-                    </div>
-                    {% endif %}
-                    
-                    <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur text-secondary text-[10px] font-bold px-2 py-1 rounded shadow-sm">
-                        FRESH IN {{ child.locality.name|upper }}
-                    </div>
-                </div>
-                
-                <div class="p-6">
-                    <h4 class="text-lg font-bold text-slate-800 mb-2">{{ food.name }}</h4>
-                    <p class="text-sm text-slate-500 line-clamp-2 mb-4">{{ food.nutritional_description }}</p>
-                    
-                    <div class="flex gap-2">
-                        <span class="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-lg">{{ food.protein_content }}g Protein</span>
-                        <span class="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]" title="{{ food.vitamin_content }}">{{ food.vitamin_content|default:"Vitamins" }}</span>
-                    </div>
-                </div>
+        <!-- Local Market Guide -->
+        <div class="bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100">
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-cart-shopping text-emerald-500"></i> Local Market Guide
+                </h3>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Available in {{ child.locality.district|default:"Your Sector" }}</p>
             </div>
-            {% endfor %}
+            
+            <div class="space-y-4">
+                {% for food in recommendation.recommended_foods.all %}
+                <div class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 group hover:border-emerald-500 transition-all hover:bg-emerald-50/30">
+                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-xl text-emerald-600 shadow-sm group-hover:scale-110 transition-transform border border-slate-100">
+                        <i class="fas {% if food.category == 'protein' %}fa-egg{% elif 'millet' in food.category %}fa-seedling{% else %}fa-leaf{% endif %}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-black text-slate-800 text-sm tracking-tight">{{ food.name }}</h4>
+                            {% if food.is_low_cost %}
+                                <span class="text-[7px] font-black bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded uppercase">Cheap & Best</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">{{ food.nutritional_description }}</p>
+                        <div class="flex gap-2 mt-2">
+                            <span class="text-[8px] font-bold text-slate-400 uppercase bg-white px-2 py-0.5 rounded-full border border-slate-100">{{ food.vitamin_content }}</span>
+                            <span class="text-[8px] font-bold text-slate-400 uppercase bg-white px-2 py-0.5 rounded-full border border-slate-100">{{ food.protein_content }}g Protein</span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-8">
+                    <i class="fas fa-box-open text-slate-200 text-3xl mb-2"></i>
+                    <p class="text-[10px] text-slate-400 font-bold">Scanning regional markets...</p>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="mt-6 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                <p class="text-[10px] text-emerald-800 font-bold leading-relaxed">
+                    <i class="fas fa-lightbulb mr-1"></i> These foods were selected based on <b>{{ child.locality.name }}'s</b> climate and local harvest availability.
+                </p>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Immunization Roadmap Tab -->
-<div id="immunization" class="bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100 tab-content hidden">
-    <h3 class="text-2xl font-bold text-slate-800 mb-8 flex items-center gap-2">
-        <i class="fas fa-map text-secondary"></i> Immunity Roadmap
-    </h3>
-    
-    <div class="relative max-w-2xl mx-auto">
-        <!-- SVG Winding Path Background -->
-        <svg class="absolute inset-0 w-full h-full -z-10" viewBox="0 0 100 200" preserveAspectRatio="none">
-            <path d="M 10 10 Q 50 50 10 90 T 50 170" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4 4" />
-        </svg>
-
-        <!-- Roadmap Nodes -->
-        <div class="space-y-12 relative">
-            {% for vax in vaccinations %}
-            {% if vax.status == 'completed' %}
-            <!-- Completed Node -->
-            <div class="flex items-center gap-6 group cursor-pointer">
-                <div class="w-12 h-12 bg-secondary text-white rounded-full flex items-center justify-center shadow-lg shadow-green-200 z-10 transition-transform group-hover:scale-110">
-                    <i class="fas fa-check"></i>
+<!-- Brain Quest Tab -->
+<div id="brain" class="space-y-8 tab-content hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Daily Offline Activity -->
+        <div class="bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 class="text-2xl font-black text-slate-800 flex items-center gap-2">
+                        <i class="fas fa-puzzle-piece text-indigo-500"></i> Daily Offline Activity
+                    </h3>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">100% Screen-Free Play</p>
                 </div>
-                <div class="bg-pastel-green px-6 py-4 rounded-2xl flex-1 relative transition-all group-hover:shadow-md">
-                    <div class="absolute left-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-pastel-green rotate-45"></div>
-                    <div class="flex justify-between items-start">
-                        <h4 class="font-bold text-green-800">{{ vax.vaccine.name }}</h4>
-                        <span class="text-xs text-green-600 font-bold">{{ vax.administered_date|date:"M d, Y" }}</span>
+                <span class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-black border border-indigo-100 uppercase">
+                    {{ brain_context.tier }} Mode
+                </span>
+            </div>
+
+            {% if brain_context.activity %}
+            <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100 mb-6">
+                <h4 class="text-xl font-black text-slate-800 mb-4">{{ brain_context.activity.title }}</h4>
+                <p class="text-slate-600 leading-relaxed mb-6">{{ brain_context.activity.description }}</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 bg-white rounded-xl border border-slate-200">
+                        <h5 class="text-[10px] font-black text-slate-400 uppercase mb-2">Materials Needed</h5>
+                        <p class="text-xs font-bold text-slate-700">{{ brain_context.activity.materials_needed }}</p>
                     </div>
-                    <p class="text-sm text-green-700 mt-1">{{ vax.vaccine.description }}</p>
-                    <span class="text-xs font-bold text-white bg-green-600 px-2 py-1 rounded mt-2 inline-block"><i class="fas fa-shield"></i> Shield Unlocked</span>
+                    <div class="p-4 bg-white rounded-xl border border-slate-200">
+                        <h5 class="text-[10px] font-black text-indigo-400 uppercase mb-2">Brain Benefit</h5>
+                        <p class="text-xs font-bold text-indigo-700">{{ brain_context.activity.developmental_benefit }}</p>
+                    </div>
                 </div>
             </div>
-            {% elif vax.status == 'pending' or vax.status == 'overdue' %}
-            <!-- Active/Pending Node -->
-            <div class="flex items-center gap-6 group cursor-pointer ml-8">
-                <div class="w-14 h-14 bg-white border-4 border-accent text-accent rounded-full flex items-center justify-center shadow-xl shadow-yellow-100 z-10 relative">
-                    <div class="absolute inset-0 border-4 border-accent rounded-full animate-ping opacity-20"></div>
-                    <i class="fas fa-star text-xl"></i>
-                </div>
-                <div class="bg-pastel-yellow px-6 py-4 rounded-2xl flex-1 relative border border-yellow-200 transition-all group-hover:shadow-lg">
-                    <div class="absolute left-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-pastel-yellow border-b border-l border-yellow-200 rotate-45"></div>
-                    <div class="flex justify-between items-start">
-                        <h4 class="font-bold text-yellow-800">{{ vax.vaccine.name }}</h4>
-                        <span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">DUE: {{ vax.due_date|date:"M d, Y" }}</span>
-                    </div>
-                    <p class="text-sm text-yellow-700 mt-1">{{ vax.vaccine.description }}</p>
-                    
-                    {% if user.is_vaccination_admin %}
-                    <div class="mt-4 flex gap-2">
-                        <a href="{% url 'mark_vaccine_complete' vax.id %}" class="bg-secondary text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-600 transition-colors">
-                            Mark Complete <i class="fas fa-check ml-1"></i>
-                        </a>
-                        <a href="{% url 'trigger_urgent_reminder' child.id %}" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-600 transition-colors">
-                            Remind Parent <i class="fas fa-bell ml-1"></i>
-                        </a>
-                    </div>
-                    {% endif %}
-                </div>
+
+            <div class="flex gap-4">
+                <a href="{% url 'complete_activity' child.id brain_context.activity.id %}" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-center py-4 rounded-2xl font-black transition-all shadow-lg shadow-indigo-200">
+                    I Completed This Activity!
+                </a>
+            </div>
+            
+            {% if brain_context.activity.risk_if_missed %}
+            <div class="mt-6 p-4 bg-red-50 rounded-xl border border-red-100">
+                <p class="text-[10px] text-red-600 font-black leading-relaxed">
+                    <i class="fas fa-triangle-exclamation mr-1"></i> WHY THIS MATTERS: {{ brain_context.activity.risk_if_missed }}
+                </p>
             </div>
             {% endif %}
-            {% empty %}
-            <p class="text-slate-500">No vaccination schedule found.</p>
+            {% else %}
+            <p class="text-slate-400 italic">Finding today's play quest...</p>
+            {% endif %}
+        </div>
+
+        <!-- Bedtime Story -->
+        <div class="bg-gradient-to-br from-[#0b0f19] via-[#1e1b4b] to-[#311042] p-8 rounded-[3rem] text-white shadow-2xl relative overflow-hidden group">
+            <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] animate-pulse" style="animation-duration: 8s;"></div>
+            <div class="absolute -right-8 -top-8 w-48 h-48 bg-sky-500/10 rounded-full blur-3xl"></div>
+            <div class="relative z-10" id="story-container">
+                <div class="flex justify-between items-start mb-8">
+                    <div>
+                        <h3 class="text-2xl font-black flex items-center gap-2">
+                            <i class="fas fa-moon text-yellow-400"></i> {% if child.gender == 'F' %}Heroine's{% else %}Hero's{% endif %} Bedtime Story
+                        </h3>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Tonight's Quest in {{ child.locality.name|default:"the Village" }}</p>
+                    </div>
+                    {% if brain_context.story %}
+                    <button onclick="shuffleStory('{{ child.id }}')" id="shuffle-btn" class="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-lg flex items-center gap-2 group/btn z-20">
+                        <i class="fas fa-rotate transition-transform duration-500" id="shuffle-icon"></i> ✨ Switch Story
+                    </button>
+                    {% endif %}
+                </div>
+
+                {% if brain_context.story %}
+                <div class="space-y-6 transition-all duration-300 transform translate-y-0 opacity-100" id="story-content">
+                    <h4 class="text-3xl font-black text-sky-400 tracking-tight" id="story-title" data-current-title="{{ brain_context.story.title }}">{{ brain_context.story.title }}</h4>
+                    <div class="p-6 bg-white/5 rounded-3xl border border-white/10 max-h-80 overflow-y-auto custom-scrollbar relative">
+                        <p class="leading-relaxed tracking-wide text-slate-200 text-lg font-medium" id="story-text">
+                            {{ brain_context.story.text }}
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-4 p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
+                        <div class="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center text-emerald-400 text-xl">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black text-emerald-400 uppercase tracking-tighter">{% if child.gender == 'F' %}Heroine{% else %}Hero{% endif %} Lesson</p>
+                            <p class="text-sm font-bold text-emerald-300" id="story-lesson">{{ brain_context.story.lesson }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-slate-500 italic" id="story-empty">Preparing tonight's hero quest...</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Zoomable Immunization Roadmap Tab -->
+<div id="immunization" class="bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100 tab-content hidden">
+    <div class="flex justify-between items-center mb-8">
+        <h3 class="text-2xl font-bold text-slate-800">High-Stakes Immunization Engine</h3>
+        <div class="flex gap-2">
+            <span class="px-3 py-1 bg-pastel-blue text-primary text-[10px] font-bold rounded-full">INFANT</span>
+            <span class="px-3 py-1 bg-pastel-green text-green-700 text-[10px] font-bold rounded-full">CHILD</span>
+            <span class="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-full">PRE-TEEN</span>
+        </div>
+    </div>
+
+    <div class="relative max-w-4xl mx-auto">
+        <div class="space-y-12 relative">
+            {% for vax in vaccinations %}
+            <div class="flex items-center gap-8 group">
+                <!-- Node Icon -->
+                <div class="relative">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center z-10 relative border-4 transition-transform group-hover:scale-110
+                        {% if vax.status == 'completed' %}bg-secondary border-green-200 text-white
+                        {% elif vax.status == 'overdue' %}bg-red-500 border-red-200 text-white animate-pulse
+                        {% else %}bg-white border-accent text-accent shadow-xl shadow-yellow-100{% endif %}">
+                        <i class="fas {% if vax.status == 'completed' %}fa-check{% elif vax.status == 'overdue' %}fa-triangle-exclamation{% else %}fa-shield-virus{% endif %} text-2xl"></i>
+                    </div>
+                    {% if not forloop.last %}
+                    <div class="absolute top-16 left-1/2 -translate-x-1/2 w-0.5 h-12 bg-slate-200"></div>
+                    {% endif %}
+                </div>
+
+                <!-- Content Card -->
+                <div class="flex-1 p-6 rounded-3xl border transition-all hover:shadow-lg
+                    {% if vax.status == 'completed' %}bg-pastel-green border-green-200
+                    {% elif vax.status == 'overdue' %}bg-pastel-red border-red-200
+                    {% else %}bg-white border-slate-200{% endif %}">
+                    
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h4 class="font-extrabold text-slate-800">{{ vax.vaccine.name }}</h4>
+                            <p class="text-xs text-slate-500 font-medium">{{ vax.vaccine.description }}</p>
+                            <p class="text-[10px] font-black text-primary mt-1 flex items-center gap-1">
+                                <i class="fas fa-calendar-day"></i> DUE: {{ vax.due_date|date:"d M Y" }}
+                            </p>
+                        </div>
+                        <span class="text-[10px] font-extrabold px-3 py-1 rounded-full uppercase
+                            {% if vax.status == 'completed' %}bg-green-600 text-white
+                            {% elif vax.status == 'overdue' %}bg-red-600 text-white
+                            {% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                            {{ vax.status|upper }}
+                        </span>
+                    </div>
+
+                    <div class="bg-white/50 p-4 rounded-2xl border border-black/5 mt-4">
+                        <p class="text-[11px] text-slate-700 leading-relaxed italic mb-2">
+                            <strong>Why it matters:</strong> {{ vax.vaccine.why_it_matters|default:"Essential protection for your child's future." }}
+                        </p>
+                        {% if vax.status != 'completed' %}
+                        <p class="text-[11px] text-red-600 font-bold">
+                            <i class="fas fa-warning mr-1"></i> Risk: {{ vax.vaccine.consequence_text|default:"Vulnerability to preventable illness." }}
+                        </p>
+                        {% endif %}
+                    </div>
+
+                    {% if user.is_vaccination_admin and vax.status != 'completed' %}
+                    <div class="mt-4 flex gap-2">
+                        <a href="{% url 'mark_vaccine_complete' vax.id %}" class="bg-secondary text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-green-600 transition-colors">Mark Complete</a>
+                        <a href="{% url 'trigger_urgent_reminder' child.id %}" class="bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-700 transition-colors">Urgent Reminder</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
             {% endfor %}
         </div>
     </div>
 </div>
 
-<!-- Growth Tracking Tab -->
+<!-- Growth Tab -->
 <div id="growth" class="bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100 tab-content hidden">
     <div class="flex justify-between items-start mb-8">
         <div>
             <h3 class="text-2xl font-bold text-slate-800">Growth Tracking</h3>
-            <p class="text-slate-500 mt-1">Current stats: Weight: {{ child.current_weight }} kg | Height: {{ child.current_height }} cm</p>
+            <p class="text-slate-500 text-sm mt-1">Stored in KG/CM &bull; Displayed in {{ child.weight_unit }}/{{ child.height_unit }}</p>
         </div>
-        
-        <form action="{% url 'add_growth_record' child.id %}" method="post" class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex gap-4 items-end">
+        <form action="{% url 'add_growth_record' child.id %}" method="post" class="flex gap-4 items-end bg-slate-50 p-6 rounded-2xl border border-slate-200">
             {% csrf_token %}
             <div>
-                <label class="block text-xs font-bold text-slate-500 mb-1">Weight (kg)</label>
-                <input type="number" step="0.1" name="weight" required class="w-24 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-primary">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Weight ({{ child.weight_unit }})</label>
+                <input type="number" step="0.1" name="weight" required class="w-24 px-3 py-2 border rounded-lg focus:ring-2 ring-primary/20 outline-none">
             </div>
             <div>
-                <label class="block text-xs font-bold text-slate-500 mb-1">Height (cm)</label>
-                <input type="number" step="0.1" name="height" required class="w-24 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-primary">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Height ({{ child.height_unit }})</label>
+                <input type="number" step="0.1" name="height" required class="w-24 px-3 py-2 border rounded-lg focus:ring-2 ring-primary/20 outline-none">
             </div>
-            <button type="submit" class="bg-primary hover:bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold transition-colors">Add</button>
+            <button type="submit" class="bg-primary text-white px-6 py-2 rounded-xl font-bold hover:bg-indigo-600 transition-colors">Record Stats</button>
         </form>
     </div>
-    
-    <div class="w-full h-64">
+    <div class="h-80 w-full">
         <canvas id="growthChart"></canvas>
     </div>
 </div>
 
-<!-- Logic Games Tab -->
-<div id="games" class="bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100 tab-content hidden">
-    <h3 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-        <i class="fas fa-gamepad text-primary"></i> Play & Learn
-    </h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {% for game in online_games %}
-        {% if game.url %}
-        <!-- Online Game -->
-        <a href="{{ game.url }}" target="_blank" rel="noopener noreferrer" class="bg-pastel-blue p-6 rounded-2xl hover:shadow-lg transition-all group block border border-blue-100 relative overflow-hidden">
-            <div class="absolute right-[-20px] top-[-20px] w-24 h-24 bg-primary/10 rounded-full group-hover:scale-150 transition-transform"></div>
-            <span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm mb-2 inline-block relative z-10">ONLINE GAME</span>
-            <h4 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-primary transition-colors relative z-10">{{ game.name }}</h4>
-            <p class="text-slate-600 text-sm relative z-10">{{ game.description }}</p>
-            <div class="mt-4 text-xs font-bold text-primary flex items-center gap-1 relative z-10">
-                Play Now <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-            </div>
-        </a>
-        {% else %}
-        <!-- Offline Activity -->
-        <div class="bg-pastel-yellow p-6 rounded-2xl border border-yellow-200 relative overflow-hidden">
-            <div class="absolute right-[-20px] top-[-20px] w-24 h-24 bg-accent/10 rounded-full"></div>
-            <span class="bg-accent text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm mb-2 inline-block relative z-10">TODAY'S OFFLINE ACTIVITY</span>
-            <h4 class="text-xl font-bold text-yellow-800 mb-2 relative z-10">{{ game.name }}</h4>
-            <p class="text-yellow-700 text-sm relative z-10">{{ game.description }}</p>
-            <div class="mt-4 text-xs font-bold text-yellow-600 flex items-center gap-1 relative z-10">
-                <i class="fas fa-hands text-lg"></i>
-            </div>
-        </div>
-        {% endif %}
-        {% empty %}
-        <p class="text-slate-500">No games currently available.</p>
-        {% endfor %}
-    </div>
-</div>
-
+{{ growth_json|json_script:"growth-data" }}
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
     function openTab(evt, tabName) {
-        // Hide all tab contents
         document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('block');
             tab.classList.add('hidden');
+            tab.classList.remove('block');
         });
-        
-        // Reset all tab buttons
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.className = "tab-btn bg-white hover:bg-slate-50 text-slate-600 px-6 py-3 rounded-full font-semibold border border-slate-200 whitespace-nowrap transition-colors";
+            btn.classList.remove('bg-slate-800', 'text-white', 'font-bold', 'shadow-md', 'shadow-slate-900/50', 'border-slate-700', 'active');
+            btn.classList.add('bg-slate-900/80', 'text-slate-300', 'font-semibold', 'border-slate-800');
+            const ind = btn.querySelector('.tab-indicator');
+            if (ind) { ind.classList.add('hidden'); ind.classList.remove('block'); }
         });
-        
-        // Show current tab
         const currentTab = document.getElementById(tabName);
         if (currentTab) {
             currentTab.classList.remove('hidden');
             currentTab.classList.add('block');
         }
-        
-        // Set active class on clicked button
-        evt.currentTarget.className = "tab-btn bg-primary text-white px-6 py-3 rounded-full font-bold shadow-md shadow-indigo-200 whitespace-nowrap active";
+        evt.currentTarget.classList.remove('bg-slate-900/80', 'text-slate-300', 'font-semibold', 'border-slate-800');
+        evt.currentTarget.classList.add('bg-slate-800', 'text-white', 'font-bold', 'shadow-md', 'shadow-slate-900/50', 'border-slate-700', 'active');
+        const ind = evt.currentTarget.querySelector('.tab-indicator');
+        if (ind) { ind.classList.remove('hidden'); ind.classList.add('block'); }
     }
 
-    // Initialize Swiper
-    document.addEventListener('DOMContentLoaded', function() {
-        const swiper = new Swiper('.nutritionSwiper', {
+    async function shuffleStory(childId) {
+        const titleEl = document.getElementById('story-title');
+        const contentEl = document.getElementById('story-content');
+        const iconEl = document.getElementById('shuffle-icon');
+        const btnEl = document.getElementById('shuffle-btn');
+        
+        if (!titleEl || !contentEl) return;
+        
+        // Spin icon
+        iconEl.classList.add('rotate-180');
+        btnEl.classList.add('scale-95');
+        
+        // Fade out
+        contentEl.classList.add('opacity-0', 'translate-y-4');
+        contentEl.classList.remove('opacity-100', 'translate-y-0');
+        
+        const currentTitle = titleEl.dataset.currentTitle || '';
+        
+        try {
+            const res = await fetch(`/get-new-story/${childId}/?current_story_title=${encodeURIComponent(currentTitle)}`);
+            if (!res.ok) throw new Error('No stories');
+            
+            const data = await res.json();
+            
+            // Wait for fade out
+            await new Promise(r => setTimeout(r, 300));
+            
+            // Swap content
+            document.getElementById('story-title').innerText = data.title;
+            document.getElementById('story-title').dataset.currentTitle = data.title;
+            document.getElementById('story-text').innerText = data.text;
+            document.getElementById('story-lesson').innerText = data.lesson;
+            
+            // Fade in
+            contentEl.classList.remove('opacity-0', 'translate-y-4');
+            contentEl.classList.add('opacity-100', 'translate-y-0');
+        } catch (e) {
+            console.error(e);
+            contentEl.classList.remove('opacity-0', 'translate-y-4');
+            contentEl.classList.add('opacity-100', 'translate-y-0');
+        } finally {
+            setTimeout(() => {
+                iconEl.classList.remove('rotate-180');
+                btnEl.classList.remove('scale-95');
+            }, 300);
+        }
+    }
+
+    async function toggleUnits(childId) {
+        const weightUnit = document.getElementById('weight-toggle').value;
+        const heightUnit = document.getElementById('height-toggle').value;
+        
+        try {
+            const res = await fetch(`/child/${childId}/toggle-units/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ weight_unit: weightUnit, height_unit: heightUnit })
+            });
+            
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('display-weight').innerText = data.display_weight.toFixed(1);
+                document.getElementById('display-weight-unit').innerText = data.weight_unit;
+                document.getElementById('display-height').innerText = data.display_height.toFixed(1);
+                document.getElementById('display-height-unit').innerText = data.height_unit;
+            }
+        } catch (e) {
+            console.error('Failed to toggle units', e);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        new Swiper('.nutritionSwiper', {
             slidesPerView: 1.2,
             spaceBetween: 20,
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
-            },
-            navigation: {
-                nextEl: '.swiper-button-next-custom',
-                prevEl: '.swiper-button-prev-custom',
-            },
-            breakpoints: {
-                640: { slidesPerView: 2.2 },
-                1024: { slidesPerView: 2.5 }
-            }
+            pagination: { el: '.swiper-pagination', clickable: true },
+            breakpoints: { 640: { slidesPerView: 2.2 }, 1024: { slidesPerView: 2.5 } }
         });
 
-        // Initialize Chart.js Donut Chart
-        const ctx = document.getElementById('nutritionChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Protein', 'Carbs', 'Vitamins & Fats'],
-                datasets: [{
-                    data: [35, 45, 20],
-                    backgroundColor: ['#10b981', '#f59e0b', '#6366f1'],
-                    borderWidth: 0,
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                cutout: '75%',
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) { return context.label + ': ' + context.parsed + '%'; }
-                        }
-                    }
-                }
-            }
-        });
-
-        // Initialize Growth Chart
         const growthCtx = document.getElementById('growthChart');
         if (growthCtx) {
+            const growthData = JSON.parse(document.getElementById('growth-data').textContent);
             new Chart(growthCtx.getContext('2d'), {
                 type: 'line',
                 data: {
-                    labels: [{% for r in growth_records %}'{{ r.recorded_at|date:"M d" }}',{% endfor %}],
+                    labels: growthData.labels,
                     datasets: [{
                         label: 'Weight (kg)',
-                        data: [{% for r in growth_records %}{{ r.weight }},{% endfor %}],
+                        data: growthData.weights,
                         borderColor: '#6366f1',
                         backgroundColor: 'rgba(99, 102, 241, 0.1)',
                         borderWidth: 3,
                         tension: 0.4,
                         fill: true
-                    },
-                    {
-                        label: 'Height (cm)',
-                        data: [{% for r in growth_records %}{{ r.height }},{% endfor %}],
-                        borderColor: '#10b981',
-                        backgroundColor: 'transparent',
-                        borderWidth: 3,
-                        tension: 0.4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'top' } },
-                    scales: { y: { beginAtZero: false } }
+                    plugins: { legend: { position: 'top' } }
                 }
             });
         }

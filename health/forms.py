@@ -1,10 +1,10 @@
 from django import forms
-from .models import ChildProfile, GrowthRecord
+from .models import ChildProfile, GrowthRecord, MotherProfile, RecoveryMetric
 
 class ChildProfileForm(forms.ModelForm):
     class Meta:
         model = ChildProfile
-        fields = ['name', 'date_of_birth', 'gender', 'locality', 'current_weight', 'current_height']
+        fields = ['name', 'date_of_birth', 'gender', 'locality', 'current_weight', 'weight_unit', 'current_height', 'height_unit']
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
         }
@@ -13,3 +13,25 @@ class GrowthRecordForm(forms.ModelForm):
     class Meta:
         model = GrowthRecord
         fields = ['weight', 'height']
+
+class MotherProfileForm(forms.ModelForm):
+    class Meta:
+        model = MotherProfile
+        fields = ['delivery_date', 'delivery_type', 'current_weight', 'weight_unit']
+        widgets = {
+            'delivery_date': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+class RecoveryMetricForm(forms.ModelForm):
+    SYMPTOM_CHOICES = [
+        ('fever', 'High Fever'),
+        ('heavy_bleeding', 'Heavy Bleeding'),
+        ('severe_headache', 'Severe Headache'),
+        ('vision_blurring', 'Vision Blurring'),
+        ('pain', 'Severe Abdominal Pain'),
+    ]
+    symptoms = forms.MultipleChoiceField(choices=SYMPTOM_CHOICES, widget=forms.CheckboxSelectMultiple, required=False)
+    
+    class Meta:
+        model = RecoveryMetric
+        fields = ['weight', 'systolic_bp', 'diastolic_bp', 'symptoms']
