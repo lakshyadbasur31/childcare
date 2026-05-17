@@ -180,9 +180,10 @@ def child_detail(request, child_id):
     display_height = child.current_height / 100 if child.height_unit == 'm' else child.current_height
     # Nutrition Engine
     from .logic.recommender import get_nutrition_recommendation
+    from django.utils import timezone
     try:
         recommendation = NutritionRecommendation.objects.filter(child=child).latest('created_at')
-        if not recommendation.seven_day_plan:
+        if not recommendation.seven_day_plan or recommendation.created_at.date() < timezone.now().date():
             recommendation = get_nutrition_recommendation(child)
     except NutritionRecommendation.DoesNotExist:
         recommendation = get_nutrition_recommendation(child)
