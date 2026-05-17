@@ -26,6 +26,7 @@ urlpatterns = [
     
     # Maternal Health
     path('maternal/profile/', views.manage_mother_profile, name='manage_mother_profile'),
+    path('maternal/profile/delete/', views.delete_mother_profile, name='delete_mother_profile'),
     path('maternal/metric/add/', views.record_recovery_metric, name='record_recovery_metric'),
     path('maternal/lactation-guide/', views.lactation_guide, name='lactation_guide'),
     

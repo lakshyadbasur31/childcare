@@ -64,13 +64,23 @@ def maternal_dashboard(request):
     maternal_context = get_postpartum_context(mother)
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     metric_form = RecoveryMetricForm()
+    children = ChildProfile.objects.filter(parent=request.user).order_by('-created_at')
     
     return render(request, 'health/maternal_dashboard.html', {
         'mother': mother,
         'maternal_context': maternal_context,
         'notifications': notifications,
         'metric_form': metric_form,
+        'children': children,
     })
+
+@login_required
+@user_passes_test(is_parent)
+def delete_mother_profile(request):
+    mother = getattr(request.user, 'mother_profile', None)
+    if mother:
+        mother.delete()
+    return redirect('parent_dashboard')
 
 def get_oracle_insights(locality):
     """
