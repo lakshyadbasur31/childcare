@@ -32,6 +32,20 @@ def get_postpartum_context(mother):
             region_tag=region,
             diet_type='veg'
         ).first()
+        
+    # Fetch an alternate recipe from the same phase and preference
+    alternate_recipe = PostpartumDiet.objects.filter(
+        phase=recipe.phase if recipe else phase,
+        region_tag=region,
+        diet_type=mother.diet_preference
+    ).exclude(day_number=day_mod).order_by('?').first()
+    
+    if not alternate_recipe:
+        alternate_recipe = PostpartumDiet.objects.filter(
+            phase=recipe.phase if recipe else phase,
+            region_tag=region,
+            diet_type='veg'
+        ).exclude(day_number=day_mod).order_by('?').first()
     
     # Get current week for the roadmap
     current_week = (days_since_delivery // 7) + 1
@@ -69,6 +83,7 @@ def get_postpartum_context(mother):
         'day_number': days_since_delivery,
         'phase': phase,
         'recipe': recipe,
+        'alternate_recipe': alternate_recipe,
         'guide': guide,
         'week_number': current_week,
         'daily_affirmation': AFFIRMATIONS[(days_since_delivery - 1) % len(AFFIRMATIONS)],

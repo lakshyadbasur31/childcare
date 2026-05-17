@@ -156,6 +156,16 @@
                                         <div class="flex-1">
                                             <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">{{ meal.meal }}</p>
                                             <p class="text-slate-800 font-semibold">{{ meal.food }}</p>
+                                            
+                                            {% if meal.alt_food %}
+                                            <button onclick="toggleChildAlt('{{ day }}', '{{ forloop.counter0 }}')" class="mt-2 text-[9px] text-sky-500 hover:text-sky-600 font-bold uppercase tracking-wider flex items-center gap-1">
+                                                <i class="fas fa-arrows-rotate"></i> Alternate Option
+                                            </button>
+                                            <div id="child-alt-{{ day }}-{{ forloop.counter0 }}" class="hidden mt-2 p-2.5 bg-white rounded-xl border border-sky-100 text-[11px]">
+                                                <p class="font-extrabold text-sky-600 mb-0.5">Alt Choice:</p>
+                                                <p class="text-slate-600 font-medium leading-relaxed">{{ meal.alt_food }}</p>
+                                            </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     {% endfor %}
@@ -445,6 +455,13 @@
         evt.currentTarget.classList.add('bg-slate-800', 'text-white', 'font-bold', 'shadow-md', 'shadow-slate-900/50', 'border-slate-700', 'active');
         const ind = evt.currentTarget.querySelector('.tab-indicator');
         if (ind) { ind.classList.remove('hidden'); ind.classList.add('block'); }
+    }
+
+    function toggleChildAlt(day, index) {
+        const el = document.getElementById('child-alt-' + day + '-' + index);
+        if (el) {
+            el.classList.toggle('hidden');
+        }
     }
 
     async function shuffleStory(childId) {

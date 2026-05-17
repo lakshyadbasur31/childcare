@@ -51,28 +51,52 @@ def generate_7_day_plan(child, available_foods, guidelines):
         smart_carb = get_smart_choice(carb_sources)
         smart_green = get_smart_choice(green_sources)
         
+        # Alternate Smart Choice Generation
+        alt_protein_sources = [p for p in protein_sources if p != smart_protein]
+        alt_carb_sources = [c for c in carb_sources if c != smart_carb]
+        alt_green_sources = [g for g in green_sources if g != smart_green]
+        
+        smart_protein_alt = get_smart_choice(alt_protein_sources) or smart_protein
+        smart_carb_alt = get_smart_choice(alt_carb_sources) or smart_carb
+        smart_green_alt = get_smart_choice(alt_green_sources) or smart_green
+        
         texture = guidelines['texture']
         
         # Adaptive Meal Styles
         if texture == "puree":
             breakfast = f"Mashed {smart_carb.name if smart_carb else 'Grain'} with Milk"
+            breakfast_alt = f"Warm {smart_carb_alt.name if smart_carb_alt else 'Grain'} Porridge"
+            
             lunch = f"Pureed {smart_protein.name if smart_protein else 'Pulse'} & {smart_carb.name if smart_carb else 'Rice'}"
+            lunch_alt = f"Soft Mashed {smart_protein_alt.name if smart_protein_alt else 'Millet'} & Lentils"
+            
             dinner = f"Soft {smart_green.name if smart_green else 'Vegetable'} Mash"
+            dinner_alt = f"Steamed Pumpkin / {smart_green_alt.name if smart_green_alt else 'Carrot'} Puree"
         elif texture == "soft_solid":
             breakfast = f"{smart_carb.name if smart_carb else 'Grain'} Upma / Porridge"
+            breakfast_alt = f"Soft {smart_carb_alt.name if smart_carb_alt else 'Millet'} Pongal"
+            
             lunch = f"{smart_protein.name if smart_protein else 'Pulse'} Khichdi with {smart_green.name if smart_green else 'Greens'}"
+            lunch_alt = f"{smart_protein_alt.name if smart_protein_alt else 'Lentil'} Stew with {smart_carb_alt.name if smart_carb_alt else 'Soft Rice'}"
+            
             dinner = f"Soft Roti with {smart_protein.name if smart_protein else 'Dal'}"
+            dinner_alt = f"Mashed Vegetable Khichdi with {smart_protein_alt.name if smart_protein_alt else 'Curd'}"
         else: # Full Solid
             breakfast = f"Stuffed Paratha / Dosa with {smart_protein.name if smart_protein else 'Chutney'}"
+            breakfast_alt = f"Fluffy Millets Idli with {smart_protein_alt.name if smart_protein_alt else 'Sambar'}"
+            
             lunch = f"Regional {smart_carb.name if smart_carb else 'Grain'} Thali with {smart_protein.name if smart_protein else 'Curry'}"
+            lunch_alt = f"{smart_carb_alt.name if smart_carb_alt else 'Rice'} Pulav with roasted {smart_protein_alt.name if smart_protein_alt else 'Paneer'}"
+            
             dinner = f"{smart_carb.name if smart_carb else 'Bread'} with {smart_green.name if smart_green else 'Saag'} & {smart_protein.name if smart_protein else 'Curd'}"
+            dinner_alt = f"Wheat Chapati with {smart_green_alt.name if smart_green_alt else 'Palak'} and boiled {smart_protein_alt.name if smart_protein_alt else 'Chana'}"
 
         plan[day] = [
-            {"meal": "Breakfast", "time": "8:30 AM", "food": breakfast},
-            {"meal": "Mid-Morning", "time": "11:30 AM", "food": "Seasonal Fruit / Local Snack"},
-            {"meal": "Lunch", "time": "2:00 PM", "food": lunch},
-            {"meal": "Evening", "time": "5:00 PM", "food": "Roasted Grains / Milk"},
-            {"meal": "Dinner", "time": "8:00 PM", "food": dinner}
+            {"meal": "Breakfast", "time": "8:30 AM", "food": breakfast, "alt_food": breakfast_alt},
+            {"meal": "Mid-Morning", "time": "11:30 AM", "food": "Seasonal Fruit / Local Snack", "alt_food": "Coconut Water / Dry Seeds"},
+            {"meal": "Lunch", "time": "2:00 PM", "food": lunch, "alt_food": lunch_alt},
+            {"meal": "Evening", "time": "5:00 PM", "food": "Roasted Grains / Milk", "alt_food": "Sprouted Sprouts / Herbal drink"},
+            {"meal": "Dinner", "time": "8:00 PM", "food": dinner, "alt_food": dinner_alt}
         ]
     
     return plan

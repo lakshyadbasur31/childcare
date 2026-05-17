@@ -77,25 +77,72 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
-                    <h4 class="text-rose-500 font-black text-xs uppercase mb-4 tracking-tighter">Breakfast</h4>
-                    <p class="text-lg font-black text-slate-800 mb-2">{{ maternal_context.recipe.breakfast_name }}</p>
-                    <p class="text-xs text-slate-500 leading-relaxed">{{ maternal_context.recipe.breakfast_details }}</p>
+                <div class="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-rose-500 font-black text-xs uppercase mb-4 tracking-tighter">Breakfast</h4>
+                        <p class="text-lg font-black text-slate-800 mb-2">{{ maternal_context.recipe.breakfast_name }}</p>
+                        <p class="text-xs text-slate-500 leading-relaxed">{{ maternal_context.recipe.breakfast_details }}</p>
+                    </div>
+                    <div>
+                        <button onclick="toggleAlt('breakfast')" class="mt-4 text-[10px] text-rose-500 hover:text-rose-600 font-extrabold uppercase tracking-wide flex items-center gap-1">
+                            <i class="fas fa-arrows-rotate"></i> Alternate Option
+                        </button>
+                        <div id="alt-breakfast" class="hidden mt-3 p-3 bg-white rounded-xl border border-rose-100 text-xs">
+                            <p class="font-black text-rose-600 mb-1">Alt: {{ maternal_context.alternate_recipe.breakfast_name }}</p>
+                            <p class="text-[10px] text-slate-500 leading-relaxed">{{ maternal_context.alternate_recipe.breakfast_details }}</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
-                    <h4 class="text-blue-500 font-black text-xs uppercase mb-4 tracking-tighter">Lunch</h4>
-                    <p class="text-lg font-black text-slate-800 mb-2">{{ maternal_context.recipe.lunch_name }}</p>
-                    <p class="text-xs text-slate-500 leading-relaxed">{{ maternal_context.recipe.lunch_details }}</p>
+                
+                <div class="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-blue-500 font-black text-xs uppercase mb-4 tracking-tighter">Lunch</h4>
+                        <p class="text-lg font-black text-slate-800 mb-2">{{ maternal_context.recipe.lunch_name }}</p>
+                        <p class="text-xs text-slate-500 leading-relaxed">{{ maternal_context.recipe.lunch_details }}</p>
+                    </div>
+                    <div>
+                        <button onclick="toggleAlt('lunch')" class="mt-4 text-[10px] text-blue-500 hover:text-blue-600 font-extrabold uppercase tracking-wide flex items-center gap-1">
+                            <i class="fas fa-arrows-rotate"></i> Alternate Option
+                        </button>
+                        <div id="alt-lunch" class="hidden mt-3 p-3 bg-white rounded-xl border border-blue-100 text-xs">
+                            <p class="font-black text-blue-600 mb-1">Alt: {{ maternal_context.alternate_recipe.lunch_name }}</p>
+                            <p class="text-[10px] text-slate-500 leading-relaxed">{{ maternal_context.alternate_recipe.lunch_details }}</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
-                    <h4 class="text-yellow-500 font-black text-xs uppercase mb-4 tracking-tighter">Evening Snack</h4>
-                    <p class="text-lg font-black text-slate-800 mb-2">{{ maternal_context.recipe.snack_name }}</p>
-                    <p class="text-xs text-slate-500 leading-relaxed">{{ maternal_context.recipe.snack_details }}</p>
+                
+                <div class="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-yellow-500 font-black text-xs uppercase mb-4 tracking-tighter">Evening Snack</h4>
+                        <p class="text-lg font-black text-slate-800 mb-2">{{ maternal_context.recipe.snack_name }}</p>
+                        <p class="text-xs text-slate-500 leading-relaxed">{{ maternal_context.recipe.snack_details }}</p>
+                    </div>
+                    <div>
+                        <button onclick="toggleAlt('snack')" class="mt-4 text-[10px] text-yellow-600 hover:text-yellow-700 font-extrabold uppercase tracking-wide flex items-center gap-1">
+                            <i class="fas fa-arrows-rotate"></i> Alternate Option
+                        </button>
+                        <div id="alt-snack" class="hidden mt-3 p-3 bg-white rounded-xl border border-yellow-100 text-xs">
+                            <p class="font-black text-yellow-600 mb-1">Alt: {{ maternal_context.alternate_recipe.snack_name }}</p>
+                            <p class="text-[10px] text-slate-500 leading-relaxed">{{ maternal_context.alternate_recipe.snack_details }}</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
-                    <h4 class="text-indigo-500 font-black text-xs uppercase mb-4 tracking-tighter">Dinner</h4>
-                    <p class="text-lg font-black text-slate-800 mb-2">{{ maternal_context.recipe.dinner_name }}</p>
-                    <p class="text-xs text-slate-500 leading-relaxed">{{ maternal_context.recipe.dinner_details }}</p>
+                
+                <div class="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-indigo-500 font-black text-xs uppercase mb-4 tracking-tighter">Dinner</h4>
+                        <p class="text-lg font-black text-slate-800 mb-2">{{ maternal_context.recipe.dinner_name }}</p>
+                        <p class="text-xs text-slate-500 leading-relaxed">{{ maternal_context.recipe.dinner_details }}</p>
+                    </div>
+                    <div>
+                        <button onclick="toggleAlt('dinner')" class="mt-4 text-[10px] text-indigo-500 hover:text-indigo-600 font-extrabold uppercase tracking-wide flex items-center gap-1">
+                            <i class="fas fa-arrows-rotate"></i> Alternate Option
+                        </button>
+                        <div id="alt-dinner" class="hidden mt-3 p-3 bg-white rounded-xl border border-indigo-100 text-xs">
+                            <p class="font-black text-indigo-600 mb-1">Alt: {{ maternal_context.alternate_recipe.dinner_name }}</p>
+                            <p class="text-[10px] text-slate-500 leading-relaxed">{{ maternal_context.alternate_recipe.dinner_details }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -249,4 +296,12 @@
     </a>
 </div>
 {% endif %}
+<script>
+function toggleAlt(meal) {
+    const el = document.getElementById('alt-' + meal);
+    if (el) {
+        el.classList.toggle('hidden');
+    }
+}
+</script>
 {% endblock %}
