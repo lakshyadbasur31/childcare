@@ -204,6 +204,14 @@ def child_detail(request, child_id):
         recommendation = get_nutrition_recommendation(child)
 
     # Brain Development & Offline Activities
+    from .models import BedtimeStory
+    if BedtimeStory.objects.count() < 7:
+        try:
+            from .logic.populate_activities import seed_brain_data
+            seed_brain_data()
+        except Exception:
+            pass
+
     from .logic.activity_logic import get_brain_development_context
     from django.utils import timezone
     story_date = request.session.get(f'story_date_{child.id}')

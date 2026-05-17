@@ -275,7 +275,7 @@
                 <div class="flex justify-between items-start mb-8">
                     <div>
                         <h3 class="text-2xl font-black flex items-center gap-2">
-                            <i class="fas fa-moon text-yellow-400"></i> {% if child.gender == 'F' %}Heroine's{% else %}Hero's{% endif %} Bedtime Story
+                            <i class="fas fa-moon text-yellow-400"></i> {{ child.name }}'s Bedtime Story
                         </h3>
                         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Tonight's Quest in {{ child.locality.name|default:"the Village" }}</p>
                     </div>
@@ -299,7 +299,7 @@
                             <i class="fas fa-star"></i>
                         </div>
                         <div>
-                            <p class="text-[10px] font-black text-emerald-400 uppercase tracking-tighter">{% if child.gender == 'F' %}Heroine{% else %}Hero{% endif %} Lesson</p>
+                            <p class="text-[10px] font-black text-emerald-400 uppercase tracking-tighter">{{ child.name }}'s Lesson</p>
                             <p class="text-sm font-bold text-emerald-300" id="story-lesson">{{ brain_context.story.lesson }}</p>
                         </div>
                     </div>

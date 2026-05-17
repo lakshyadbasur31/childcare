@@ -87,6 +87,30 @@ def seed_brain_data():
             'template_text': 'In a quiet village surrounded by green fields, a farmer and his wife lived with their baby and a pet mongoose. One day, the wife went to the market, leaving the baby alone with the mongoose. While she was away, a deadly cobra entered the house. The loyal mongoose fought the snake and killed it, saving the baby. When the wife returned and saw blood on the mongoose, she acted in haste. But upon seeing her baby safe and the dead snake nearby, she realized the mongoose had been a true guardian of their home.',
             'region_tag': 'SOUTH_INDIA',
             'moral_lesson': 'Haste makes waste; always verify the truth before acting.'
+        },
+        {
+            'title': 'The Monkey and the Crocodile',
+            'template_text': 'A clever monkey lived on a beautiful rose-apple tree by the bank of a river. He became friends with a crocodile named Karalavaktra. They spent hours talking and sharing delicious rose-apples. One day, the crocodile took some apples home for his wife. His wife, intrigued by the sweetness of the fruit, demanded to eat the monkey\'s heart, arguing that it must be incredibly sweet. The crocodile reluctantly agreed and invited the monkey to his home for dinner, carrying him on his back. Halfway across the deep river, the crocodile confessed the truth. Thinking quickly, the monkey said, "Oh dear friend, why didn\'t you tell me sooner? I leave my heart safely stored in the hollow of my rose-apple tree! We must return to fetch it." The crocodile believed him and turned back. As soon as they reached the shore, the monkey climbed up to safety and told the foolish crocodile that one\'s heart is never kept outside. The monkey\'s quick wit had saved his life.',
+            'region_tag': 'SOUTH_INDIA',
+            'moral_lesson': 'Presence of mind and quick thinking can overcome even the deadliest trap.'
+        },
+        {
+            'title': 'The Crane and the Crab',
+            'template_text': 'An old crane lived by a large lake but was too weak to catch fish. To survive, he devised a plan. He stood by the water\'s edge looking extremely sad. When the fish and a friendly crab asked him what was wrong, he replied, "I have heard that astrologers predict a twelve-year drought, and this beautiful lake will dry up completely. I feel terrible for all of you." Terrified, the water creatures begged the crane for help. He offered to carry them one by one to a larger, perennial lake nearby. The fish gladly agreed. Everyday, the crane carried a few fish, but instead of taking them to a lake, he flew to a flat rock and ate them. One day, the crab asked to be relocated. As they flew, the crab looked down and saw no lake, only a rock covered in fish bones. Realizing the crane\'s treachery, the crab used his sharp claws to pinch the crane\'s neck tightly, killing the deceitful bird. The crab walked back to the old lake and saved his fellow friends.',
+            'region_tag': 'COASTAL',
+            'moral_lesson': 'Deceit never pays in the end; a wicked plan backfires on the plotter.'
+        },
+        {
+            'title': 'The Blue Jackal',
+            'template_text': 'Chandrava was a hungry jackal wandering in search of food near a village when he was chased by a pack of fierce stray dogs. Running for his life, he scrambled into the house of a local washerman and fell into a large vat full of deep blue dye. When he climbed out, he was completely blue from nose to tail. In the forest, all the other animals were terrified of this strange, celestial creature. Seeing their fear, the jackal declared himself the king appointed by the heavens. He enjoyed the power, receiving food and praise from lions, tigers, and elephants alike. One evening, a pack of jackals began to howl in the distance. Overjoyed, the blue jackal forgot his disguise and began to howl along with them. Hearing his true voice, the other forest animals realized he was just an ordinary jackal and chased him out of the jungle.',
+            'region_tag': 'WEST_INDIA',
+            'moral_lesson': 'True identity cannot be hidden behind artificial disguises forever.'
+        },
+        {
+            'title': 'The Four Friends and the Hunter',
+            'template_text': 'Once in a peaceful forest, a deer, a crow, a turtle, and a mouse were the best of friends. They met everyday to talk and share food. One day, the deer got trapped in a hunter\'s strong net. The crow spotted him and flew back to tell the others. Quickly, the crow carried the mouse on his back to the trap, and the mouse began to gnaw through the thick ropes with his sharp teeth. Just as the deer was freed, the slow-moving turtle arrived. The hunter returned and, seeing the deer gone, captured the slow turtle instead. To save the turtle, the deer lay down near the path, pretending to be dead, while the crow pretended to peck at his eyes. The hunter greedily ran towards the deer, leaving his bag containing the turtle behind. The mouse quickly gnawed the bag open and freed the turtle. When the hunter got close, the deer sprang up and ran away, leaving the hunter empty-handed and amazed by the power of true friendship.',
+            'region_tag': 'NORTH_INDIA',
+            'moral_lesson': 'Unity and collective effort can defeat the greatest challenges.'
         }
     ]
 
