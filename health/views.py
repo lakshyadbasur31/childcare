@@ -183,7 +183,22 @@ def child_detail(request, child_id):
     from django.utils import timezone
     try:
         recommendation = NutritionRecommendation.objects.filter(child=child).latest('created_at')
-        if not recommendation.seven_day_plan or recommendation.created_at.date() < timezone.now().date():
+        
+        # Check if the existing recommendation is missing the 'alt_food' key
+        has_alt = True
+        if recommendation.seven_day_plan:
+            try:
+                for day_name, meals in recommendation.seven_day_plan.items():
+                    if isinstance(meals, list) and len(meals) > 0:
+                        if 'alt_food' not in meals[0]:
+                            has_alt = False
+                            break
+            except Exception:
+                has_alt = False
+        else:
+            has_alt = False
+            
+        if not recommendation.seven_day_plan or recommendation.created_at.date() < timezone.now().date() or not has_alt:
             recommendation = get_nutrition_recommendation(child)
     except NutritionRecommendation.DoesNotExist:
         recommendation = get_nutrition_recommendation(child)
