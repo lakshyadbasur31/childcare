@@ -81,7 +81,7 @@
     <div class="z-10 flex flex-col gap-2">
         <a href="{% url 'download_passport' child.id %}"
             class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-transform hover:-translate-y-0.5 inline-flex items-center gap-2">
-            <i class="fas fa-file-medical"></i> Bharat Health Passport
+            <i class="fas fa-file-medical"></i> Health Passport
         </a>
         {% if brain_context.tier == 'infant' %}
         <div class="bg-pastel-yellow/50 px-4 py-2 rounded-lg border border-yellow-200 text-[10px] font-bold text-yellow-800">
@@ -113,24 +113,6 @@
 
 <!-- Mentor Engine Tab -->
 <div id="nutrition" class="space-y-8 tab-content block">
-    <!-- Mentor Banner -->
-    <div class="bg-gradient-to-r from-slate-900 to-slate-800 p-8 rounded-[2rem] text-white shadow-xl relative overflow-hidden">
-        <div class="absolute right-0 bottom-0 opacity-10 text-[10rem] rotate-12"><i class="fas fa-quote-right"></i></div>
-        <div class="flex items-start gap-6 relative z-10">
-            <div class="w-16 h-16 bg-white/10 rounded-2xl backdrop-blur flex items-center justify-center text-3xl">
-                <i class="fas fa-brain-circuit"></i>
-            </div>
-            <div>
-                <h3 class="text-xl font-bold mb-2">Bharat-Guardian Insight</h3>
-                <p class="text-slate-300 text-sm leading-relaxed max-w-2xl">
-                    {{ recommendation.logic_summary }}
-                    {% if age_months < 6 %}
-                    <br><strong class="text-yellow-400">Mentor Tip:</strong> In this foundation phase, warmth and exclusive breastfeeding are your child's primary armor.
-                    {% endif %}
-                </p>
-            </div>
-        </div>
-    </div>
 
     <!-- Diet Plan -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">

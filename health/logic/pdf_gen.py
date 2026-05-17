@@ -65,7 +65,7 @@ def generate_health_passport(child, vaccination_schedule, nutrition_recommendati
     body_style = ParagraphStyle('BodyText', parent=styles['Normal'], fontSize=11, leading=16)
 
     # PAGE 1: HERO STORYBOOK
-    elements.append(Paragraph(f"BHARAT-HEALTH GUARDIAN: {child.name.upper()}", title_style))
+    elements.append(Paragraph(f"HEALTH PASSPORT: {child.name.upper()}", title_style))
     elements.append(Spacer(1, 12))
     
     district = child.locality.district if child.locality else "Your Region"
@@ -73,7 +73,7 @@ def generate_health_passport(child, vaccination_schedule, nutrition_recommendati
     
     story_text = f"""
     Greetings to the family of <b>{child.name}</b> in {district}, {state}. <br/><br/>
-    Your child is on a journey to become a 'Bharat Guardian'. This passport tracks their growth, 
+    Your child is on an exciting growth journey. This passport tracks their growth, 
     immunity, and nutritional milestones tailored specifically for the <b>{child.locality.get_region_tag_display() if child.locality else 'North India'}</b> region.
     """
     elements.append(Paragraph(story_text, body_style))
