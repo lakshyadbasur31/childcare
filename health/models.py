@@ -57,10 +57,12 @@ class MotherProfile(models.Model):
     Profile for mothers tracking postpartum recovery.
     """
     DELIVERY_CHOICES = [('normal', 'Normal Delivery'), ('c-section', 'C-Section')]
+    DIET_CHOICES = [('veg', 'Vegetarian'), ('non-veg', 'Non-Vegetarian')]
     
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='mother_profile')
     delivery_date = models.DateField()
     delivery_type = models.CharField(max_length=20, choices=DELIVERY_CHOICES)
+    diet_preference = models.CharField(max_length=20, choices=DIET_CHOICES, default='veg')
     
     # Biometrics
     current_weight = models.FloatField(null=True, blank=True, help_text="Stored in KG")
@@ -83,6 +85,7 @@ class PostpartumDiet(models.Model):
     day_number = models.IntegerField(help_text="Day 1 to 40 of recovery")
     phase = models.IntegerField(choices=[(1, 'Phase 1: Healing'), (2, 'Phase 2: Lactation'), (3, 'Phase 3: Strength')])
     region_tag = models.CharField(max_length=50, choices=Locality.REGION_CHOICES)
+    diet_type = models.CharField(max_length=20, choices=[('veg', 'Vegetarian'), ('non-veg', 'Non-Vegetarian')], default='veg')
     
     # Breakfast
     breakfast_name = models.CharField(max_length=200)

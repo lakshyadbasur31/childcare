@@ -17,7 +17,7 @@ class GrowthRecordForm(forms.ModelForm):
 class MotherProfileForm(forms.ModelForm):
     class Meta:
         model = MotherProfile
-        fields = ['delivery_date', 'delivery_type', 'current_weight', 'weight_unit']
+        fields = ['delivery_date', 'delivery_type', 'diet_preference', 'current_weight', 'weight_unit']
         widgets = {
             'delivery_date': forms.DateInput(attrs={'type': 'date'}),
         }

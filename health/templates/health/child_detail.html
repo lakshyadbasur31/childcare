@@ -1,6 +1,45 @@
 {% extends 'health/base.html' %}
 
 {% block content %}
+<style>
+@keyframes float-star {
+    0% {
+        transform: translateY(200px) scale(0.3) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.9;
+    }
+    90% {
+        opacity: 0.9;
+    }
+    100% {
+        transform: translateY(-400px) scale(1.3) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+@keyframes twinkle-star {
+    0%, 100% { opacity: 0.2; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.3); }
+}
+
+.floating-star {
+    position: absolute;
+    color: #fbbf24; /* Amber-400 */
+    pointer-events: none;
+    animation: float-star 8s linear infinite;
+    z-index: 1;
+}
+
+.twinkle-star {
+    position: absolute;
+    color: #fef08a; /* Yellow-200 */
+    pointer-events: none;
+    animation: twinkle-star 4s ease-in-out infinite;
+    z-index: 1;
+}
+</style>
 <!-- Bharat-Health Guardian: Age-Adaptive Header -->
 <div class="bg-white rounded-[2rem] p-8 shadow-dribbble border border-slate-100 flex justify-between items-center mb-8 relative overflow-hidden">
     <!-- Adaptive Theme Background -->
@@ -236,9 +275,10 @@
         </div>
 
         <!-- Bedtime Story -->
-        <div class="bg-gradient-to-br from-[#0b0f19] via-[#1e1b4b] to-[#311042] p-8 rounded-[3rem] text-white shadow-2xl relative overflow-hidden group">
+        <div id="story-card" class="{{ brain_context.story.bg_class|default:'bg-gradient-to-br from-[#0b0f19] via-[#1e1b4b] to-[#311042]' }} p-8 rounded-[3rem] text-white shadow-2xl relative overflow-hidden group transition-all duration-500">
             <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] animate-pulse" style="animation-duration: 8s;"></div>
             <div class="absolute -right-8 -top-8 w-48 h-48 bg-sky-500/10 rounded-full blur-3xl"></div>
+            <div id="stars-container" class="absolute inset-0 overflow-hidden pointer-events-none z-0"></div>
             <div class="relative z-10" id="story-container">
                 <div class="flex justify-between items-start mb-8">
                     <div>
@@ -440,6 +480,26 @@
             document.getElementById('story-text').innerText = data.text;
             document.getElementById('story-lesson').innerText = data.lesson;
             
+            // Swap background classes
+            const cardEl = document.getElementById('story-card');
+            if (cardEl && data.bg_class) {
+                // Clear existing background styles (gradients and solid background colors)
+                cardEl.className = cardEl.className
+                    .replace(/bg-gradient-to-[^\s]+/g, '')
+                    .replace(/from-[^\s]+/g, '')
+                    .replace(/via-[^\s]+/g, '')
+                    .replace(/to-[^\s]+/g, '')
+                    .replace(/bg-\[#[a-fA-F0-9]+\]/g, '');
+                
+                // Add new background classes
+                data.bg_class.split(' ').forEach(cls => {
+                    if (cls.trim()) cardEl.classList.add(cls);
+                });
+            }
+            
+            // Re-initialize dynamic cartoon stars
+            initStarField();
+            
             // Fade in
             contentEl.classList.remove('opacity-0', 'translate-y-4');
             contentEl.classList.add('opacity-100', 'translate-y-0');
@@ -481,7 +541,55 @@
         }
     }
 
+    function initStarField() {
+        const container = document.getElementById('stars-container');
+        if (!container) return;
+        
+        // Clear previous
+        container.innerHTML = '';
+        
+        // 1. Add static twinkling stars
+        const numTwinkleStars = 15;
+        for (let i = 0; i < numTwinkleStars; i++) {
+            const star = document.createElement('i');
+            star.className = 'fas fa-star twinkle-star text-yellow-200/40 text-xs';
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.animationDelay = `${Math.random() * 4}s`;
+            star.style.fontSize = `${4 + Math.random() * 8}px`;
+            container.appendChild(star);
+        }
+        
+        // 2. Continuous floating cartoon stars spawner
+        // If an interval is already running, we handle it or just let it spin
+        if (!window.starSpawnerInterval) {
+            window.starSpawnerInterval = setInterval(() => {
+                const spawnerContainer = document.getElementById('stars-container');
+                if (!spawnerContainer) return;
+                
+                const star = document.createElement('i');
+                star.className = 'fas fa-star floating-star text-yellow-400/80';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.bottom = `-20px`; // start just below
+                
+                const duration = 5 + Math.random() * 5; // 5 to 10s
+                star.style.animationDuration = `${duration}s`;
+                
+                const size = 6 + Math.random() * 12; // 6px to 18px
+                star.style.fontSize = `${size}px`;
+                
+                spawnerContainer.appendChild(star);
+                
+                // Auto remove
+                setTimeout(() => {
+                    star.remove();
+                }, duration * 1000);
+            }, 800);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
+        initStarField();
         new Swiper('.nutritionSwiper', {
             slidesPerView: 1.2,
             spaceBetween: 20,

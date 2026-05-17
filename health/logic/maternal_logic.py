@@ -22,8 +22,16 @@ def get_postpartum_context(mother):
     region = mother.user.locality.region_tag if mother.user.locality else 'SOUTH_INDIA'
     recipe = PostpartumDiet.objects.filter(
         day_number__lte=day_mod, 
-        region_tag=region
+        region_tag=region,
+        diet_type=mother.diet_preference
     ).order_by('-day_number').first()
+    
+    if not recipe:
+        recipe = PostpartumDiet.objects.filter(
+            day_number__lte=day_mod, 
+            region_tag=region,
+            diet_type='veg'
+        ).order_by('-day_number').first()
     
     # Get current week for the roadmap
     current_week = (days_since_delivery // 7) + 1

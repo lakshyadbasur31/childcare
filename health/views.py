@@ -157,7 +157,14 @@ def child_detail(request, child_id):
 
     # Brain Development & Offline Activities
     from .logic.activity_logic import get_brain_development_context
-    brain_context = get_brain_development_context(child)
+    from django.utils import timezone
+    story_date = request.session.get(f'story_date_{child.id}')
+    today_str = timezone.now().date().strftime('%Y%m%d')
+    story_id = None
+    if story_date == today_str:
+        story_id = request.session.get(f'story_id_{child.id}')
+        
+    brain_context = get_brain_development_context(child, story_id=story_id)
     
     growth_records = child.growth_records.all().order_by('recorded_at')
     
@@ -239,18 +246,40 @@ def shuffle_story(request, child_id):
         stories = stories.exclude(title=current_story_title)
         
     if not stories.exists():
-        # Fallback if no other story available
-        stories = BedtimeStory.objects.filter(region_tag=region)
+        # Fallback to any other story from other regions
+        stories = BedtimeStory.objects.all().exclude(title=current_story_title)
         
     if not stories.exists():
+        # Complete fallback if only 1 story exists in the entire DB
+        stories = BedtimeStory.objects.all()
         return JsonResponse({'error': 'No stories found'}, status=404)
         
     story_template = random.choice(list(stories))
     
+    # Save selection to user session for the day
+    from django.utils import timezone
+    request.session[f'story_date_{child.id}'] = timezone.now().date().strftime('%Y%m%d')
+    request.session[f'story_id_{child.id}'] = story_template.id
+    
+    # Calculate age tier to return the exact bg_class
+    import datetime
+    today = datetime.date.today()
+    age_years = today.year - child.date_of_birth.year - ((today.month, today.day) < (child.date_of_birth.month, child.date_of_birth.day))
+    if age_years < 2:
+        tier = 'infant'
+    elif age_years < 7:
+        tier = 'early'
+    else:
+        tier = 'preteen'
+        
+    from .logic.activity_logic import get_story_background
+    bg_class = get_story_background(tier, story_template.title)
+    
     return JsonResponse({
         'title': story_template.title,
         'text': story_template.template_text,
-        'lesson': story_template.moral_lesson
+        'lesson': story_template.moral_lesson,
+        'bg_class': bg_class
     })
 
 
