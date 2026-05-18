@@ -68,9 +68,8 @@ def get_brain_development_context(child, story_id=None):
     if activities:
         activity = rng.choice(activities)
         
-    # Get locality-based story
-    region = child.locality.region_tag if child.locality else 'NORTH_INDIA'
-    stories = list(BedtimeStory.objects.filter(region_tag=region).order_by('id'))
+    # Choose from all available bedtime stories to ensure daily variety
+    stories = list(BedtimeStory.objects.all().order_by('id'))
     story = None
     if stories:
         if story_id:

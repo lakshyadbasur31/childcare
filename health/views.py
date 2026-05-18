@@ -295,19 +295,17 @@ def shuffle_story(request, child_id):
     child = get_object_or_404(ChildProfile, id=child_id, parent=request.user)
     
     current_story_title = request.GET.get('current_story_title')
-    region = child.locality.region_tag if child.locality else 'NORTH_INDIA'
     
-    stories = BedtimeStory.objects.filter(region_tag=region)
+    # Allow shuffling through ALL bedtime stories to prevent being locked into only 2 regional stories.
+    stories = BedtimeStory.objects.all()
     if current_story_title:
         stories = stories.exclude(title=current_story_title)
         
     if not stories.exists():
-        # Fallback to any other story from other regions
-        stories = BedtimeStory.objects.all().exclude(title=current_story_title)
+        # Complete fallback if no other stories exist
+        stories = BedtimeStory.objects.all()
         
     if not stories.exists():
-        # Complete fallback if only 1 story exists in the entire DB
-        stories = BedtimeStory.objects.all()
         return JsonResponse({'error': 'No stories found'}, status=404)
         
     story_template = random.choice(list(stories))
