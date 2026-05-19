@@ -43,20 +43,30 @@ def get_story_background(tier, story_title):
 def get_brain_development_context(child, story_id=None):
     """
     Service layer for fetching age-appropriate offline activities and personalized stories.
+    Now supports 5 explicit age brackets and real-time storytelling personalization.
     """
-    # Calculate age
+    # Calculate age in months
     today = date.today()
-    age_years = today.year - child.date_of_birth.year - ((today.month, today.day) < (child.date_of_birth.month, child.date_of_birth.day))
+    age_months = (today - child.date_of_birth).days // 30
     
-    # Determine tier
-    if age_years < 2:
-        tier = 'infant'
-    elif age_years < 7:
-        tier = 'early'
-    elif age_years <= 11:
-        tier = 'preteen'
+    # Determine the explicit age-bracket tier
+    if age_months < 6:
+        tier = 'sensory'
+    elif age_months <= 12:
+        tier = 'grasping'
+    elif age_months <= 36:
+        tier = 'toddler'
+    elif age_months <= 72:
+        tier = 'preschool'
     else:
-        tier = 'preteen' # Cap at preteen
+        tier = 'school'
+        
+    # Map tier to backward-compatible mapped_tier for legacy UI / background styles
+    mapped_tier = 'infant'
+    if tier in ['toddler', 'preschool']:
+        mapped_tier = 'early'
+    elif tier == 'school':
+        mapped_tier = 'preteen'
         
     # Daily rotation: deterministic seeded random
     import random
@@ -67,6 +77,12 @@ def get_brain_development_context(child, story_id=None):
     activity = None
     if activities:
         activity = rng.choice(activities)
+    else:
+        # Fallback to the old broader categories if explicit database is empty
+        fallback_tier = 'infant' if mapped_tier == 'infant' else ('early' if mapped_tier == 'early' else 'preteen')
+        activities = list(OfflineActivity.objects.filter(age_tier=fallback_tier).order_by('id'))
+        if activities:
+            activity = rng.choice(activities)
         
     # Choose from all available bedtime stories to ensure daily variety
     stories = list(BedtimeStory.objects.all().order_by('id'))
@@ -80,17 +96,27 @@ def get_brain_development_context(child, story_id=None):
         else:
             story_template = rng.choice(stories)
             
+        story_text = story_template.template_text
+        story_lesson = story_template.moral_lesson
+        locality_name = child.locality.name if child.locality else "our peaceful village"
+        
+        # Inject child's name and locality
+        story_text = story_text.replace("[Name]", child.name).replace("[name]", child.name)
+        story_text = story_text.replace("[Locality]", locality_name).replace("[locality]", locality_name)
+        story_lesson = story_lesson.replace("[Name]", child.name).replace("[name]", child.name)
+        story_lesson = story_lesson.replace("[Locality]", locality_name).replace("[locality]", locality_name)
+        
         story = {
             'id': story_template.id,
             'title': story_template.title,
-            'text': story_template.template_text,
-            'lesson': story_template.moral_lesson,
-            'bg_class': get_story_background(tier, story_template.title)
+            'text': story_text,
+            'lesson': story_lesson,
+            'bg_class': get_story_background(mapped_tier, story_template.title)
         }
         
     return {
         'activity': activity,
         'story': story,
-        'age_years': age_years,
-        'tier': tier
+        'age_months': age_months,
+        'tier': mapped_tier
     }

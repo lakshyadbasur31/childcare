@@ -76,6 +76,64 @@
                 </div>
             </div>
 
+            <!-- AI Nutrition Companion Bar Component -->
+            <div class="mb-8 p-6 bg-slate-900 rounded-[2rem] border border-slate-800 text-white shadow-lg relative overflow-hidden">
+                <div class="absolute right-0 top-0 w-32 h-32 bg-sky-500/10 rounded-full blur-2xl"></div>
+                <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-sky-500/10 border border-sky-500/20 rounded-full flex items-center justify-center text-sky-400">
+                            <i class="fas fa-robot animate-pulse"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-black text-white">AI Nutrition Companion</h4>
+                            <p class="text-[10px] text-slate-400">Ask about postpartum substitutions, lactogenic foods, or allergy alerts.</p>
+                        </div>
+                    </div>
+                    <div class="flex w-full md:w-auto items-center gap-2">
+                        <input type="text" id="ai-nutrition-query-input-maternal" placeholder="e.g. Ragi substitution..." class="flex-1 md:w-64 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-all">
+                        <button onclick="submitAINutritionQuery('maternal')" class="bg-sky-500 hover:bg-sky-400 text-slate-950 px-4 py-2.5 rounded-xl text-xs font-black shadow-md shadow-sky-500/20 transition-all flex items-center gap-1">
+                            <span>Query</span> <i class="fas fa-paper-plane text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- Response Window -->
+                <div id="ai-nutrition-response-maternal" class="hidden mt-4 p-4 bg-slate-950 rounded-xl border border-slate-800 text-xs text-slate-300 leading-relaxed transition-all">
+                </div>
+            </div>
+
+            <script>
+            async function submitAINutritionQuery(type) {
+                const input = document.getElementById(`ai-nutrition-query-input-${type}`);
+                const responseBox = document.getElementById(`ai-nutrition-response-${type}`);
+                if (!input || !responseBox) return;
+                
+                const query = input.value.trim();
+                if (!query) return;
+                
+                responseBox.classList.remove('hidden');
+                responseBox.innerHTML = `<div class="flex items-center gap-2"><i class="fas fa-circle-notch animate-spin text-sky-400"></i> <span>Consulting local pediatric guidelines...</span></div>`;
+                
+                try {
+                    const res = await fetch('/api/nutrition/query/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({ query: query })
+                    });
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        responseBox.innerHTML = `<p class="font-bold text-sky-400 mb-1"><i class="fas fa-comment-dots mr-1.5"></i> AI Response:</p>${data.answer}`;
+                    } else {
+                        responseBox.innerHTML = `<span class="text-red-400">Error: ${data.message || 'Unable to fetch response.'}</span>`;
+                    }
+                } catch (err) {
+                    responseBox.innerHTML = `<span class="text-red-400">Connection error. Please try again.</span>`;
+                }
+            }
+            </script>
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 flex flex-col justify-between">
                     <div>
@@ -178,12 +236,27 @@
             </div>
             {% endif %}
             
-            <div class="mt-10 flex gap-6 items-center p-8 bg-sky-500 rounded-[2rem] text-white shadow-xl shadow-sky-200">
-                <div class="flex-1">
-                    <h4 class="font-black text-xl mb-1 flex items-center gap-2">
-                        <i class="fas fa-cart-shopping"></i> Market Shopping List
-                    </h4>
-                    <p class="text-sky-100 font-medium">{{ maternal_context.recipe.ingredients }}</p>
+            <div class="mt-10 p-8 bg-sky-500 rounded-[2rem] text-white shadow-xl shadow-sky-200">
+                <h4 class="font-black text-xl mb-4 flex items-center gap-2">
+                    <i class="fas fa-cart-shopping"></i> Smart Market Shopping List
+                </h4>
+                <p class="text-sky-100 text-[10px] font-bold uppercase tracking-wider mb-2">Excluding items already in your pantry</p>
+                <div class="space-y-3 mt-4">
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/20">
+                        <p class="font-bold text-sm mb-1"><i class="fas fa-person-breastfeeding mr-2"></i>Mother's Recovery Needs:</p>
+                        <p class="text-xs text-sky-100 font-medium">{{ maternal_context.recipe.ingredients }}</p>
+                    </div>
+                    
+                    {% if shopping_list %}
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/20">
+                        <p class="font-bold text-sm mb-2"><i class="fas fa-baby mr-2"></i>Children's Recommended Diet Needs:</p>
+                        <ul class="text-xs text-sky-100 font-medium list-disc list-inside">
+                        {% for item in shopping_list %}
+                            <li>{{ item.name }} ({{ item.get_category_display }})</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -284,7 +357,108 @@
                     </div>
                 </div>
             </div>
+            </div>
         </div>
+
+        <!-- Mood & Exercise Tracker -->
+        <div class="bg-white rounded-[2.5rem] p-8 shadow-soft border border-slate-100">
+            <h4 class="text-xl font-black mb-6 text-slate-800 flex items-center gap-2">
+                <i class="fas fa-calendar-check text-indigo-500"></i> Daily Mood & Exercise
+            </h4>
+            
+            <form action="{% url 'log_mood_exercise' %}" method="post" class="mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">How are you feeling today?</label>
+                    <select name="mood" required class="w-full bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-indigo-500">
+                        <option value="great">Great - Energized and Positive</option>
+                        <option value="good" selected>Good - Stable and Calm</option>
+                        <option value="tired">Tired - Needs rest</option>
+                        <option value="overwhelmed">Overwhelmed - Needing support</option>
+                    </select>
+                </div>
+                <div class="mb-4 space-y-3">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" name="exercise_done" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-slate-300">
+                        <span class="text-xs font-bold text-slate-650">I completed my recommended exercise/walk today</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" name="affirmation_done" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-slate-300">
+                        <span class="text-xs font-bold text-slate-655">I completed my mental health affirmation today</span>
+                    </label>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-bold transition-all shadow-md">
+                    Log Today
+                </button>
+            </form>
+            
+            <!-- Full Responsive Monthly Grid Calendar -->
+            <div class="bg-slate-50 p-5 rounded-[2rem] border border-slate-200 shadow-inner">
+                <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+                    <p class="text-[11px] font-black text-slate-500 uppercase tracking-widest">
+                        <i class="fas fa-calendar-days text-indigo-500 mr-1.5"></i> {{ calendar_month_name }} {{ calendar_year }} Status
+                    </p>
+                    <div class="flex gap-2 text-[8px] font-bold text-slate-400">
+                        <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Great</span>
+                        <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> Calm</span>
+                        <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Tired</span>
+                        <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Stress</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-7 gap-1.5">
+                    <div class="text-[9px] font-black text-slate-400 uppercase text-center">Mon</div>
+                    <div class="text-[9px] font-black text-slate-400 uppercase text-center">Tue</div>
+                    <div class="text-[9px] font-black text-slate-400 uppercase text-center">Wed</div>
+                    <div class="text-[9px] font-black text-slate-400 uppercase text-center">Thu</div>
+                    <div class="text-[9px] font-black text-slate-400 uppercase text-center">Fri</div>
+                    <div class="text-[9px] font-black text-slate-400 uppercase text-center">Sat</div>
+                    <div class="text-[9px] font-black text-slate-400 uppercase text-center">Sun</div>
+                    
+                    {% for week in calendar_weeks %}
+                        {% for day_data in week %}
+                            {% if day_data.day == '' %}
+                                <div class="aspect-square bg-slate-100/40 rounded-lg border border-slate-100/50"></div>
+                            {% else %}
+                                <div class="relative aspect-square bg-white border {% if day_data.is_today %}border-indigo-500 ring-2 ring-indigo-100{% else %}border-slate-200/80{% endif %} rounded-xl p-1 flex flex-col justify-between hover:border-indigo-400 transition-all cursor-default">
+                                    <span class="text-[9px] font-black {% if day_data.is_today %}text-indigo-600{% else %}text-slate-400{% endif %}">
+                                        {{ day_data.day }}
+                                    </span>
+                                    
+                                    {% if day_data.log %}
+                                        <div class="flex gap-0.5 justify-center items-center mb-0.5">
+                                            <!-- Mood Dot -->
+                                            <span title="Mood: {{ day_data.log.get_mood_display }}" class="w-1.5 h-1.5 rounded-full 
+                                                {% if day_data.log.mood == 'great' %}bg-emerald-500
+                                                {% elif day_data.log.mood == 'good' %}bg-sky-400
+                                                {% elif day_data.log.mood == 'tired' %}bg-amber-400
+                                                {% else %}bg-rose-500{% endif %}">
+                                            </span>
+                                            
+                                            <!-- Exercise Icon -->
+                                            {% if day_data.log.exercise_done %}
+                                                <i title="Exercise completed" class="fas fa-person-running text-[8px] text-sky-500"></i>
+                                            {% endif %}
+                                            
+                                            <!-- Affirmation Icon -->
+                                            {% if day_data.log.affirmation_done %}
+                                                <i title="Affirmation completed" class="fas fa-heart text-[8px] text-indigo-500 animate-pulse"></i>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                
+                <div class="flex gap-4 mt-3 text-[9px] font-semibold text-slate-400 border-t border-slate-200/60 pt-2 justify-center">
+                    <span class="flex items-center gap-1"><i class="fas fa-person-running text-sky-500"></i> Exercise Done</span>
+                    <span class="flex items-center gap-1"><i class="fas fa-heart text-indigo-500"></i> Affirmation Done</span>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 {% else %}

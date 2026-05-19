@@ -33,7 +33,10 @@ def parent_dashboard(request):
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     urgent_count = notifications.filter(is_urgent=True, is_read=False).count()
     
-    mother = getattr(request.user, 'mother_profile', None)
+    try:
+        mother = request.user.mother_profile
+    except Exception:
+        mother = None
     maternal_context = None
     if mother:
         maternal_context = get_postpartum_context(mother)
@@ -57,7 +60,10 @@ def children_dashboard(request):
 @login_required
 @user_passes_test(is_parent)
 def maternal_dashboard(request):
-    mother = getattr(request.user, 'mother_profile', None)
+    try:
+        mother = request.user.mother_profile
+    except Exception:
+        mother = None
     if not mother:
         return redirect('manage_mother_profile')
         
@@ -66,18 +72,84 @@ def maternal_dashboard(request):
     metric_form = RecoveryMetricForm()
     children = ChildProfile.objects.filter(parent=request.user).order_by('-created_at')
     
+    # Fetch mood logs for calendar
+    from .models import MotherExerciseMoodLog
+    from django.utils import timezone
+    import datetime
+    import calendar
+    
+    thirty_days_ago = timezone.now().date() - datetime.timedelta(days=30)
+    mood_logs = MotherExerciseMoodLog.objects.filter(mother=mother, date__gte=thirty_days_ago).order_by('date')
+    
+    # Generate current month's calendar matrix for a full responsive grid calendar
+    today = datetime.date.today()
+    current_year = today.year
+    current_month = today.month
+    month_name = calendar.month_name[current_month]
+    month_cal = calendar.monthcalendar(current_year, current_month)
+    
+    month_logs = MotherExerciseMoodLog.objects.filter(
+        mother=mother,
+        date__year=current_year,
+        date__month=current_month
+    )
+    logs_by_day = {log.date.day: log for log in month_logs}
+    
+    calendar_weeks = []
+    for week in month_cal:
+        week_days = []
+        for day in week:
+            if day == 0:
+                week_days.append({'day': '', 'log': None, 'is_today': False})
+            else:
+                log = logs_by_day.get(day)
+                is_today = (day == today.day)
+                week_days.append({
+                    'day': day,
+                    'log': log,
+                    'is_today': is_today
+                })
+        calendar_weeks.append(week_days)
+        
+    # Calculate shopping list based on children's recommendations and mother's pantry
+    shopping_list = set()
+    pantry_items = [item.strip().lower() for item in mother.pantry_items.split(',')] if mother.pantry_items else []
+    
+    for child in children:
+        try:
+            rec = child.recommendations.latest('created_at')
+            for food in rec.recommended_foods.all():
+                # Simple exclusion if the name contains the pantry item or vice versa
+                exclude = False
+                for pantry_item in pantry_items:
+                    if pantry_item in food.name.lower() or food.name.lower() in pantry_item:
+                        exclude = True
+                        break
+                if not exclude:
+                    shopping_list.add(food)
+        except Exception:
+            pass
+            
     return render(request, 'health/maternal_dashboard.html', {
         'mother': mother,
         'maternal_context': maternal_context,
         'notifications': notifications,
         'metric_form': metric_form,
         'children': children,
+        'mood_logs': mood_logs,
+        'shopping_list': list(shopping_list),
+        'calendar_weeks': calendar_weeks,
+        'calendar_month_name': month_name,
+        'calendar_year': current_year,
     })
 
 @login_required
 @user_passes_test(is_parent)
 def delete_mother_profile(request):
-    mother = getattr(request.user, 'mother_profile', None)
+    try:
+        mother = request.user.mother_profile
+    except Exception:
+        mother = None
     if mother:
         mother.delete()
     return redirect('parent_dashboard')
@@ -258,6 +330,9 @@ def child_detail(request, child_id):
     # Calculate age for UI adaptive logic
     import datetime
     age_months = (datetime.date.today() - child.date_of_birth).days // 30
+    
+    current_day = datetime.date.today().strftime("%A")
+    today_plan = recommendation.seven_day_plan.get(current_day, []) if recommendation.seven_day_plan else []
         
     return render(request, 'health/child_detail.html', {
         'child': child,
@@ -266,6 +341,8 @@ def child_detail(request, child_id):
         'vaccinations': vaccinations,
         'recommendation': recommendation,
         'diet_plan': recommendation.seven_day_plan,
+        'today_plan': today_plan,
+        'current_day': current_day,
         'growth_records': growth_records,
         'growth_json': growth_data,
         'display_weight': display_weight,
@@ -329,10 +406,20 @@ def shuffle_story(request, child_id):
     from .logic.activity_logic import get_story_background
     bg_class = get_story_background(tier, story_template.title)
     
+    # Personalize text and lesson in real-time
+    story_text = story_template.template_text
+    story_lesson = story_template.moral_lesson
+    locality_name = child.locality.name if child.locality else "our peaceful village"
+    
+    story_text = story_text.replace("[Name]", child.name).replace("[name]", child.name)
+    story_text = story_text.replace("[Locality]", locality_name).replace("[locality]", locality_name)
+    story_lesson = story_lesson.replace("[Name]", child.name).replace("[name]", child.name)
+    story_lesson = story_lesson.replace("[Locality]", locality_name).replace("[locality]", locality_name)
+    
     return JsonResponse({
         'title': story_template.title,
-        'text': story_template.template_text,
-        'lesson': story_template.moral_lesson,
+        'text': story_text,
+        'lesson': story_lesson,
         'bg_class': bg_class
     })
 
@@ -394,7 +481,10 @@ def download_passport(request, child_id):
         recommendation = get_nutrition_recommendation(child)
         
     # Maternal Context for PDF
-    mother = getattr(request.user, 'mother_profile', None)
+    try:
+        mother = request.user.mother_profile
+    except Exception:
+        mother = None
     maternal_context = get_postpartum_context(mother) if mother else None
     
     pdf_path = generate_health_passport(child, vaccinations, recommendation, maternal_context)
@@ -457,7 +547,10 @@ def toggle_units(request, child_id):
 @login_required
 @user_passes_test(is_parent)
 def manage_mother_profile(request):
-    mother = getattr(request.user, 'mother_profile', None)
+    try:
+        mother = request.user.mother_profile
+    except Exception:
+        mother = None
     if request.method == 'POST':
         form = MotherProfileForm(request.POST, instance=mother)
         locality_id = request.POST.get('locality')
@@ -551,3 +644,108 @@ def detect_locality(request):
         'name': nearest.name,
         'region': nearest.get_region_tag_display()
     })
+
+@login_required
+@user_passes_test(is_parent)
+def evaluate_triage_view(request):
+    """
+    Blueprint: Triage evaluation endpoint.
+    """
+    try:
+        mother = request.user.mother_profile
+        latest_metric = RecoveryMetric.objects.filter(mother=mother).latest('recorded_at')
+        
+        from .logic.maternal_logic import evaluate_maternal_triage
+        flags = evaluate_maternal_triage(latest_metric)
+        
+        return JsonResponse({'status': 'success', 'triage_flags': flags})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+@login_required
+def log_nutrition(request):
+    """
+    Blueprint: NutritionLog endpoint.
+    """
+    from .models import NutritionLog
+    import json
+    
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            meal_type = data.get('meal_type', 'Unknown')
+            food_items = data.get('food_items', '')
+            iron_score = data.get('iron_score', 0)
+            
+            NutritionLog.objects.create(
+                user=request.user,
+                meal_type=meal_type,
+                food_items=food_items,
+                iron_score=iron_score
+            )
+            return JsonResponse({'status': 'success', 'message': 'Nutrition logged successfully.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+@login_required
+@user_passes_test(is_parent)
+def log_mood_exercise(request):
+    if request.method == 'POST':
+        from .models import MotherExerciseMoodLog
+        import datetime
+        try:
+            mother = request.user.mother_profile
+            mood = request.POST.get('mood')
+            exercise_done = request.POST.get('exercise_done') == 'on'
+            affirmation_done = request.POST.get('affirmation_done') == 'on'
+            notes = request.POST.get('notes', '')
+            
+            # Create or update today's log
+            log, created = MotherExerciseMoodLog.objects.update_or_create(
+                mother=mother,
+                date=datetime.date.today(),
+                defaults={
+                    'mood': mood,
+                    'exercise_done': exercise_done,
+                    'affirmation_done': affirmation_done,
+                    'notes': notes
+                }
+            )
+        except Exception as e:
+            pass
+    return redirect('maternal_dashboard')
+
+@login_required
+def ai_nutrition_query(request):
+    """
+    Asynchronous AI Nutrition Companion Query Engine.
+    Provides regional, allergy-safe responses.
+    """
+    import json
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            query = data.get('query', '').strip().lower()
+            
+            # Intelligent rule-based regional and clinical response simulator
+            if not query:
+                return JsonResponse({'status': 'success', 'answer': 'Please ask a question about meal substitutions, allergy advice, or high-iron staples!'})
+                
+            if "ragi" in query or "substitute" in query or "substitution" in query:
+                response_text = "Ragi is exceptionally high in calcium and iron. If you need a substitute, Bajra (Pearl Millet), Jowar (Sorghum), or Red Rice powder are excellent low-cost regional alternatives."
+            elif "allergy" in query or "allergen" in query or "safe" in query:
+                response_text = "For allergy safety, we dynamically substitute dairy with Almond Milk, wheat with Millets, paneer with Tofu, and ghee with Sesame Oil in all meal plans."
+            elif "iron" in query or "folate" in query or "anaemia" in query or "blood" in query or "weakness" in query:
+                response_text = "To fight anaemia, prioritize Spinach, Jaggery (Gur), Ragi, and beetroot. In coastal areas, clean green leaves are highly recommended."
+            elif "lactation" in query or "milk supply" in query or "breastfeed" in query:
+                response_text = "To naturally boost lactation, include fresh garlic, Moringa leaves, cumin seeds (jeera), and fenugreek (methi) water in your postpartum recovery diet."
+            elif "weight" in query or "gain" in query or "calorie" in query:
+                response_text = "Ensure you are consuming energy-dense local grains (like broken wheat dalia or red rice) with a teaspoon of cow ghee (or sesame oil if dairy-free)."
+            else:
+                response_text = "AI Companion: Focus on fresh, local, warm foods. Make sure to hydrate during breastfeeds and incorporate leafy greens to meet your daily micronutrient needs."
+                
+            return JsonResponse({'status': 'success', 'answer': response_text})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'error': 'Invalid method'}, status=405)

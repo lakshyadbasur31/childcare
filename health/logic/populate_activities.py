@@ -1,8 +1,8 @@
 import os
 import django
+import sys
 
 # Setup Django environment
-import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'childcare_project.settings')
 django.setup()
@@ -10,9 +10,94 @@ django.setup()
 from health.models import OfflineActivity, BedtimeStory
 
 def seed_brain_data():
-    # 1. Seed Offline Activities
+    # 1. Seed Offline Activities for both old and new explicit age brackets
     activities = [
-        # Infants (0-2y)
+        # Sensory/Tracking (<6 Months) - NEW
+        {
+            'title': 'High-Contrast Card Tracking',
+            'description': 'Show the baby high-contrast black and white drawings (like a simple circle or smiley face) printed or drawn on a sheet of paper. Hold it 8-12 inches from their face and slowly move it from left to right to watch them track it.',
+            'age_tier': 'sensory',
+            'materials_needed': 'White paper, black charcoal or sketch pen',
+            'developmental_benefit': 'Promotes early visual pathway development and ocular muscle coordination.',
+            'risk_if_missed': 'Slower focus adjustments and eye muscle control if visual stimulation is limited.'
+        },
+        {
+            'title': 'Sound Location Exploration',
+            'description': 'Shake a simple homemade rattle (a plastic bottle filled with mustard seeds or pebbles) gently on the left side of the baby\'s head out of their direct line of sight. Wait for them to turn their head, then repeat on the right side.',
+            'age_tier': 'sensory',
+            'materials_needed': 'Plastic bottle, small stones or dried beans',
+            'developmental_benefit': 'Develops sound localization, auditory processing, and cognitive curiosity.',
+            'risk_if_missed': 'Delayed auditory-spatial orientation and responsiveness to human voice cues.'
+        },
+        # Object permanence/grasping (6-12 Months) - NEW
+        {
+            'title': 'Hide & Seek Toy Quest',
+            'description': 'Show the baby a bright colored toy, then cover it with a small clean towel or cup while they are watching. Ask "Where did it go?" and encourage them to pull the cloth off to find the hidden treasure.',
+            'age_tier': 'grasping',
+            'materials_needed': 'A favorite toy, a small light towel or soft cloth',
+            'developmental_benefit': 'Teaches object permanence (concept that objects continue to exist even when unseen).',
+            'risk_if_missed': 'Delays in problem-solving reasoning and basic spatial object concepts.'
+        },
+        {
+            'title': 'The Crinkle Paper Squeeze',
+            'description': 'Provide the baby with clean, noisy wrapping paper or brown grocery bags. Let them squeeze, crunch, and release it with their fingers to hear the crackling sound and feel the changing shape.',
+            'age_tier': 'grasping',
+            'materials_needed': 'Clean dry paper sheets',
+            'developmental_benefit': 'Builds fine motor strength, hand grip, and cause-and-effect reasoning.',
+            'risk_if_missed': 'Underdeveloped finger muscles and weaker hand grip during the early grasp transition phase.'
+        },
+        # Toddler/sorting (1-3 Years) - NEW
+        {
+            'title': 'Nature Sort: Stones and Leaves',
+            'description': 'Collect a handful of dry leaves and small smooth stones from the garden. Help the child sort them into two separate baskets—one for the flat green leaves and another for the heavy round stones.',
+            'age_tier': 'toddler',
+            'materials_needed': 'Stones, dry leaves, two small containers',
+            'developmental_benefit': 'Fosters categorization logic, comparison skills, and physical tactile discrimination.',
+            'risk_if_missed': 'Slower development of mathematical categorization and logical sorting frameworks.'
+        },
+        {
+            'title': 'Spoon Size Matching Game',
+            'description': 'Gather a mix of small tea spoons and larger serving spoons from the kitchen. Show the toddler how to place the small spoons in one cup and the large spoons in another.',
+            'age_tier': 'toddler',
+            'materials_needed': 'Diverse sizes of kitchen spoons, two plastic mugs',
+            'developmental_benefit': 'Develops spatial comparison, size discrimination, and cognitive classification.',
+            'risk_if_missed': 'Slower recognition of geometric differences and dimensional sorting logic.'
+        },
+        # Pre-schooler/modeling (3-6 Years) - NEW
+        {
+            'title': 'Wheat Dough Atta Modeling',
+            'description': 'Give your child a small ball of clean wheat dough (atta) from the kitchen. Show them how to roll it into long ropes, round balls, and simple shapes like a snake, a star, or a bird.',
+            'age_tier': 'preschool',
+            'materials_needed': 'Wheat flour dough (atta), rolling pin or wooden board',
+            'developmental_benefit': 'Strengthens intrinsic hand muscles, visual-spatial layout skills, and creative modeling.',
+            'risk_if_missed': 'Fine motor and hand-eye coordination delays that can affect pencil grip and writing neatness.'
+        },
+        {
+            'title': 'Twig House Engineering',
+            'description': 'Use fallen twigs and dry leaves to construct a tiny structure on the flat ground. Encourage the child to build the side walls and lay down the leaf roof to shield a toy figure.',
+            'age_tier': 'preschool',
+            'materials_needed': 'Dry twigs, leaves, grass, a toy figure',
+            'developmental_benefit': 'Encourages spatial engineering thoughts, stability awareness, and concentration.',
+            'risk_if_missed': 'Reduced creative spatial problem-solving skills and hand dexterity.'
+        },
+        # School support/logic (6-11 Years) - NEW
+        {
+            'title': 'Stick Shadow Sundial',
+            'description': 'Plant a straight stick in the dirt in a sunny spot. Every hour, place a stone at the tip of the stick\'s shadow and write down the hour on the ground. Discuss how the shadow moves as the earth rotates.',
+            'age_tier': 'school',
+            'materials_needed': 'A straight stick, small flat stones, sunny open patch',
+            'developmental_benefit': 'Applies active scientific reasoning, environmental cycles, and spatial understanding of time.',
+            'risk_if_missed': 'Poorer understanding of natural sciences, astronomy, and solar relationships.'
+        },
+        {
+            'title': 'Family Story Tree Mapping',
+            'description': 'Help your child interview their grandparents or parents about older ancestors. Together, draw a branching family tree map using handprints, color codes, and names, and let them trace the family lineage.',
+            'age_tier': 'school',
+            'materials_needed': 'Paper, pencil, colorful sketches or leaf stamps',
+            'developmental_benefit': 'Fosters historical sequencing, chronological logic, social bonds, and verbal mapping.',
+            'risk_if_missed': 'Weaker logical mapping, ordering capabilities, and community identity concepts.'
+        },
+        # Old tiers for backward compatibility
         {
             'title': 'Texture Touch Discovery',
             'description': 'Gather different local fabrics like a cotton dhoti, a jute sack, and a silk scarf. Let the baby touch each one while you describe the feeling (rough, soft, smooth).',
@@ -22,15 +107,6 @@ def seed_brain_data():
             'risk_if_missed': 'Delayed sensory integration can lead to sensitivity to different textures later.'
         },
         {
-            'title': 'Mirror Mimicry',
-            'description': 'Sit with the baby in front of a mirror. Make different faces (happy, sad, surprised) and see if they try to copy you.',
-            'age_tier': 'infant',
-            'materials_needed': 'A simple household mirror',
-            'developmental_benefit': 'Builds self-awareness and social-emotional mimicry skills.',
-            'risk_if_missed': 'Mirror play is critical for developing the concept of self and empathy.'
-        },
-        # Early Childhood (3-6y)
-        {
             'title': 'The Great Grain Sort',
             'description': 'Mix a small amount of three different local grains (like Ragi, Rice, and Dal) in a bowl. Ask your child to sort them into three separate smaller bowls.',
             'age_tier': 'early',
@@ -39,85 +115,104 @@ def seed_brain_data():
             'risk_if_missed': 'Fine motor delays can impact writing skills in early schooling.'
         },
         {
-            'title': 'Kitchen Shadow Puppets',
-            'description': 'In a dim room using a single candle or torch, use kitchen utensils to create shadows on the wall. Ask the child to guess what the "Hero" utensil is doing.',
-            'age_tier': 'early',
-            'materials_needed': 'Utensils (Ladle, Spoon), Torch or Lamp',
-            'developmental_benefit': 'Encourages creative imagination and storytelling structure.',
-            'risk_if_missed': 'Imaginative play is essential for complex problem solving later in life.'
-        },
-        # Pre-Teens (7-11y)
-        {
             'title': 'Map of the Village Market',
             'description': 'Take your child to the local market. Ask them to draw a rough "Hero Map" showing where the grains, vegetables, and tools are sold.',
             'age_tier': 'preteen',
             'materials_needed': 'Paper, Charcoal or Pencil',
             'developmental_benefit': 'Builds spatial awareness and community navigation skills.',
             'risk_if_missed': 'Lack of spatial reasoning can hinder mathematical and geographic learning.'
-        },
-        {
-            'title': 'The Solar Sundial',
-            'description': 'Place a stick in the ground in an open area. Mark the shadow at 10 AM, 12 PM, and 2 PM using stones. Observe how the shadow "Quest" moves.',
-            'age_tier': 'preteen',
-            'materials_needed': 'A stick, Small stones, Sunlit area',
-            'developmental_benefit': 'Teaches basic astronomy and the concept of time passage.',
-            'risk_if_missed': 'Understanding environmental cycles is key to scientific inquiry.'
         }
     ]
 
     for act_data in activities:
         OfflineActivity.objects.get_or_create(title=act_data['title'], defaults=act_data)
 
-    # 2. Seed Bedtime Stories (Classic Folklore)
+    # 2. Seed Bedtime Stories (Expanding with [Name] and [Locality] and distinct UI themes)
     stories = [
+        # North India
         {
-            'title': 'The Lion and the Clever Rabbit',
-            'template_text': 'Deep in the jungles of India, there lived a fierce lion named Bhasuraka who hunted all the animals. To save themselves, the animals made a pact to send one animal each day. One day, it was a small rabbit\'s turn. The rabbit arrived late and told the lion that another lion had challenged him. Curious and angry, Bhasuraka followed the rabbit to a deep well. "Look inside," the rabbit said. Seeing his own reflection and thinking it was a rival, the lion jumped in and was never seen again. The jungle was finally at peace.',
+            'title': 'The Clever Rabbit and the Jungle Well',
+            'template_text': 'Deep in the jungles near [Locality], there lived a proud lion Bhasuraka who hunted all the animals. One day, a clever child named [Name] advised the animals to use their intelligence. When it was the small rabbit\'s turn to visit the lion, the rabbit arrived very late. "Another lion has challenged you," the rabbit told the angry Bhasuraka. The rabbit led Bhasuraka to a deep well. Hearing his own echo and seeing his own reflection inside, the lion jumped in! Thanks to [Name]\'s wise advice and the rabbit\'s wit, the jungle of [Locality] was peaceful forever.',
             'region_tag': 'NORTH_INDIA',
             'moral_lesson': 'Intelligence is more powerful than brute strength.'
         },
         {
-            'title': 'The Thirsty Crow and the Magic Pebbles',
-            'template_text': 'Under the hot sun of a coastal village, a thirsty crow searched for water. He found a pitcher, but the water level was too low for his beak to reach. Instead of giving up, the crow observed the shore and saw many smooth pebbles. One by one, he picked up the pebbles and dropped them into the pitcher. As the pebbles filled the bottom, the water rose to the top. The crow drank his fill and flew away happily, teaching everyone that where there is a will, there is always a way.',
-            'region_tag': 'COASTAL',
-            'moral_lesson': 'Necessity is the mother of invention.'
-        },
-        {
-            'title': 'The Loyal Mongoose',
-            'template_text': 'In a quiet village surrounded by green fields, a farmer and his wife lived with their baby and a pet mongoose. One day, the wife went to the market, leaving the baby alone with the mongoose. While she was away, a deadly cobra entered the house. The loyal mongoose fought the snake and killed it, saving the baby. When the wife returned and saw blood on the mongoose, she acted in haste. But upon seeing her baby safe and the dead snake nearby, she realized the mongoose had been a true guardian of their home.',
-            'region_tag': 'SOUTH_INDIA',
-            'moral_lesson': 'Haste makes waste; always verify the truth before acting.'
-        },
-        {
-            'title': 'The Monkey and the Crocodile',
-            'template_text': 'A clever monkey lived on a beautiful rose-apple tree by the bank of a river. He became friends with a crocodile named Karalavaktra. They spent hours talking and sharing delicious rose-apples. One day, the crocodile took some apples home for his wife. His wife, intrigued by the sweetness of the fruit, demanded to eat the monkey\'s heart, arguing that it must be incredibly sweet. The crocodile reluctantly agreed and invited the monkey to his home for dinner, carrying him on his back. Halfway across the deep river, the crocodile confessed the truth. Thinking quickly, the monkey said, "Oh dear friend, why didn\'t you tell me sooner? I leave my heart safely stored in the hollow of my rose-apple tree! We must return to fetch it." The crocodile believed him and turned back. As soon as they reached the shore, the monkey climbed up to safety and told the foolish crocodile that one\'s heart is never kept outside. The monkey\'s quick wit had saved his life.',
-            'region_tag': 'SOUTH_INDIA',
-            'moral_lesson': 'Presence of mind and quick thinking can overcome even the deadliest trap.'
-        },
-        {
-            'title': 'The Crane and the Crab',
-            'template_text': 'An old crane lived by a large lake but was too weak to catch fish. To survive, he devised a plan. He stood by the water\'s edge looking extremely sad. When the fish and a friendly crab asked him what was wrong, he replied, "I have heard that astrologers predict a twelve-year drought, and this beautiful lake will dry up completely. I feel terrible for all of you." Terrified, the water creatures begged the crane for help. He offered to carry them one by one to a larger, perennial lake nearby. The fish gladly agreed. Everyday, the crane carried a few fish, but instead of taking them to a lake, he flew to a flat rock and ate them. One day, the crab asked to be relocated. As they flew, the crab looked down and saw no lake, only a rock covered in fish bones. Realizing the crane\'s treachery, the crab used his sharp claws to pinch the crane\'s neck tightly, killing the deceitful bird. The crab walked back to the old lake and saved his fellow friends.',
-            'region_tag': 'COASTAL',
-            'moral_lesson': 'Deceit never pays in the end; a wicked plan backfires on the plotter.'
-        },
-        {
-            'title': 'The Blue Jackal',
-            'template_text': 'Chandrava was a hungry jackal wandering in search of food near a village when he was chased by a pack of fierce stray dogs. Running for his life, he scrambled into the house of a local washerman and fell into a large vat full of deep blue dye. When he climbed out, he was completely blue from nose to tail. In the forest, all the other animals were terrified of this strange, celestial creature. Seeing their fear, the jackal declared himself the king appointed by the heavens. He enjoyed the power, receiving food and praise from lions, tigers, and elephants alike. One evening, a pack of jackals began to howl in the distance. Overjoyed, the blue jackal forgot his disguise and began to howl along with them. Hearing his true voice, the other forest animals realized he was just an ordinary jackal and chased him out of the jungle.',
-            'region_tag': 'WEST_INDIA',
-            'moral_lesson': 'True identity cannot be hidden behind artificial disguises forever.'
-        },
-        {
-            'title': 'The Four Friends and the Hunter',
-            'template_text': 'Once in a peaceful forest, a deer, a crow, a turtle, and a mouse were the best of friends. They met everyday to talk and share food. One day, the deer got trapped in a hunter\'s strong net. The crow spotted him and flew back to tell the others. Quickly, the crow carried the mouse on his back to the trap, and the mouse began to gnaw through the thick ropes with his sharp teeth. Just as the deer was freed, the slow-moving turtle arrived. The hunter returned and, seeing the deer gone, captured the slow turtle instead. To save the turtle, the deer lay down near the path, pretending to be dead, while the crow pretended to peck at his eyes. The hunter greedily ran towards the deer, leaving his bag containing the turtle behind. The mouse quickly gnawed the bag open and freed the turtle. When the hunter got close, the deer sprang up and ran away, leaving the hunter empty-handed and amazed by the power of true friendship.',
+            'title': 'The Gold-Giving Sparrow of [Locality]',
+            'template_text': 'In the beautiful hills of [Locality], a little bird built her nest in the window of a kind child named [Name]. Every morning, [Name] shared a handful of ragi and wheat grains with the sparrow. In return, the magical sparrow dropped a single golden grain into the courtyard each evening. One day, a greedy merchant tried to capture the sparrow, but [Name] released it back to the blue forest. The sparrow flew high and sang a song, teaching that pure love and generosity are the greatest wealth in [Locality].',
             'region_tag': 'NORTH_INDIA',
-            'moral_lesson': 'Unity and collective effort can defeat the greatest challenges.'
+            'moral_lesson': 'True kindness is selfless, and greed destroys true beauty.'
+        },
+        # South India
+        {
+            'title': 'The Magic Drum under the Banyan Tree',
+            'template_text': 'In a green, fertile village of [Locality], a child named [Name] found an ancient wooden drum hidden in the roots of a giant banyan tree. When [Name] tapped the drum with rhythm, the music was so sweet that rain clouds formed and watered the dry paddy fields. The happy farmers rejoiced and thanked [Name], who promised to play the drum whenever [Locality] needed life and green crops. The banyan forest echoed with sweet songs.',
+            'region_tag': 'SOUTH_INDIA',
+            'moral_lesson': 'Music and harmony with nature can bring healing to the earth.'
+        },
+        {
+            'title': 'The Wise Elephant and the Hidden River',
+            'template_text': 'During a very dry summer in the village of [Locality], the water streams had all dried up. A young child named [Name] walked into the forest and met Gajendra, a wise old elephant. [Name] gently offered the last bit of jaggery to Gajendra. Touched by the kid\'s kindness, Gajendra used his large ears to listen deep into the forest floor. He marched to a spot, dug with his tusks, and uncovered a sparkling, clear underground river! [Name] ran back to lead all the villagers of [Locality] to this fresh water, and they lived in deep friendship with the forest giants.',
+            'region_tag': 'SOUTH_INDIA',
+            'moral_lesson': 'Patience, respect, and kindness toward animals unlock hidden gifts.'
+        },
+        # Coastal Belt
+        {
+            'title': 'The Thirsty Crow and the Magic Water',
+            'template_text': 'Under the warm sun of the coastal shore in [Locality], a thirsty crow searched for water. He found a pitcher behind the house of [Name], but the water level was too low. Instead of giving up, the crow asked [Name] for help. [Name] showed him smooth black pebbles lying by the sea. One by one, the crow dropped the pebbles into the pitcher. The water rose to the brim! The crow drank his fill and cawed happily, teaching the children of [Locality] that where there is a will, there is always a way.',
+            'region_tag': 'COASTAL',
+            'moral_lesson': 'Necessity and creative effort are the keys to overcoming obstacles.'
+        },
+        {
+            'title': 'The Ocean Queen and the Pearl Oyster',
+            'template_text': 'A brave young kid named [Name] walked along the sandy beaches of [Locality] picking up plastic trash. Suddenly, a giant oyster washed up, containing a glittering pearl. "This is the Ocean Queen\'s gift," a sea dolphin whispered to [Name]. The Ocean Queen appeared and said, "Because you keep our shores of [Locality] clean, I grant you this magic shell. It will always warn you when the high tide is coming." [Name] became the hero protector of the shores.',
+            'region_tag': 'COASTAL',
+            'moral_lesson': 'Protecting our marine environment brings safety and hidden treasures.'
+        },
+        # West India
+        {
+            'title': 'The Golden Sand Camel of [Locality]',
+            'template_text': 'In the golden, sandy desert surrounding [Locality], a beautiful camel named Maru carried precious bags of salt. A kind child named [Name] always kept a bowl of cool water and fresh bajra stalks ready for Maru. One night, a fierce sandstorm swept through the region, hiding the oasis path. Using his excellent memory, Maru guided [Name] safely through the shifting dunes of [Locality] back to the warmth of home. They celebrated their escape with sweet jaggery.',
+            'region_tag': 'WEST_INDIA',
+            'moral_lesson': 'Loyalty and endurance can steer us safely through the fiercest storms.'
+        },
+        {
+            'title': 'The Peacock\'s Rain Dance',
+            'template_text': 'In the arid dry fields of [Locality], crops were dying and everyone prayed for rain. A young child named [Name] gathered the children to sing traditional songs. Hearing their sweet voices, Mayura, a majestic blue peacock, spread his feathers and began a beautiful rain dance. As Mayura spun, lightning flashed, and sweet cooling rain began to fall over the parched lands of [Locality]. [Name] and the peacock danced together in the muddy puddles, celebrating the return of green life.',
+            'region_tag': 'WEST_INDIA',
+            'moral_lesson': 'Community unity and joy can summon the positive forces of nature.'
+        },
+        # East India
+        {
+            'title': 'The Bamboo Flute of [Locality]',
+            'template_text': 'In a quiet village surrounded by green tea gardens in [Locality], a child named [Name] loved to play a small bamboo flute. One afternoon, a stray tiger walked out of the hills. Instead of running, [Name] calmly sat down and played a soft, soothing melody. The tiger sat down, closed its eyes, and listened peacefully before returning back to the mountains. The village elders of [Locality] praised the child, realizing that gentle harmony wins over wild fear.',
+            'region_tag': 'EAST_INDIA',
+            'moral_lesson': 'Gentleness and calm resolve can pacify even the fiercest anger.'
+        },
+        {
+            'title': 'The River Dolphin\'s Magic Quest',
+            'template_text': 'While playing near the large river flowing through [Locality], a child named [Name] accidentally dropped a silver family ring into the deep waters. Seeing [Name]\'s tears, a playful Ganges river dolphin swam up. The dolphin swam deep into the riverbed, retrieved the sparkling ring, and placed it gently in [Name]\'s hand. In return, [Name] promised to keep the river clean from plastics, ensuring a safe home for the dolphins of [Locality].',
+            'region_tag': 'EAST_INDIA',
+            'moral_lesson': 'A helpful hand returned to nature builds a bridge of lifetime protection.'
+        },
+        # Central India
+        {
+            'title': 'The Glowing Firefly of the Plateau',
+            'template_text': 'One dark night, a child named [Name] got lost in the dense sal forests of [Locality]. Just as [Name] began to worry, a tiny firefly named Jugnu appeared, glowing with a soft amber light. Jugnu called hundreds of other fireflies, creating a glowing path that lit up the entire forest floor of [Locality]. [Name] followed this magical light safely back to their parents. They realized that no matter how small you are, you can light up someone\'s dark path.',
+            'region_tag': 'CENTRAL_INDIA',
+            'moral_lesson': 'No act of help is too small to make a vital difference in the dark.'
+        },
+        {
+            'title': 'The Banyan Tree\'s Ancient Whispers',
+            'template_text': 'On a rocky plateau in [Locality], stands a giant banyan tree that is five hundred years old. A child named [Name] loved to sit in its cool shade. The tree would whisper old fables of ancient kings who built great stone forts. [Name] learned about history, agriculture, and wisdom from these whispers. [Name] shared these stories with the school friends of [Locality], ensuring the ancient wisdom of the plateau would never be forgotten.',
+            'region_tag': 'CENTRAL_INDIA',
+            'moral_lesson': 'Respecting our natural heritage and listing to elder wisdom builds a strong foundation.'
         }
     ]
 
     for story_data in stories:
-        BedtimeStory.objects.get_or_create(title=story_data['title'], defaults=story_data)
+        BedtimeStory.objects.update_or_create(title=story_data['title'], defaults=story_data)
 
-    print("Successfully seeded Brain Development data!")
+    print("Successfully seeded dynamic Activities and expanded Fables data!")
 
 if __name__ == "__main__":
     seed_brain_data()

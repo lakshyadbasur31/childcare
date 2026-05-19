@@ -45,6 +45,19 @@
                     </select>
                 </div>
 
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-bold text-slate-600 mb-2">Food Allergies <span class="text-[10px] text-slate-400 font-normal ml-2">(Used to personalize your meals and your child's meals)</span></label>
+                    <input type="text" name="{{ form.allergies.name }}" value="{{ form.allergies.value|default:'' }}" 
+                           placeholder="{{ form.fields.allergies.widget.attrs.placeholder }}"
+                           class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 font-medium">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-bold text-slate-600 mb-2">Pantry Items <span class="text-[10px] text-slate-400 font-normal ml-2">(Used to generate smart shopping lists, excluding what you already have)</span></label>
+                    <textarea name="{{ form.pantry_items.name }}" placeholder="{{ form.fields.pantry_items.widget.attrs.placeholder }}" rows="2"
+                           class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 font-medium">{{ form.pantry_items.value|default:'' }}</textarea>
+                </div>
+
                 <div>
                     <label class="block text-sm font-bold text-slate-600 mb-2">Current Weight</label>
                     <input type="number" step="0.1" name="{{ form.current_weight.name }}" value="{{ form.current_weight.value|default:'' }}"

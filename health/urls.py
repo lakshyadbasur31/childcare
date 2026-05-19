@@ -29,6 +29,7 @@ urlpatterns = [
     path('maternal/profile/delete/', views.delete_mother_profile, name='delete_mother_profile'),
     path('maternal/metric/add/', views.record_recovery_metric, name='record_recovery_metric'),
     path('maternal/lactation-guide/', views.lactation_guide, name='lactation_guide'),
+    path('maternal/log-mood/', views.log_mood_exercise, name='log_mood_exercise'),
     
     # Child Actions
     path('child/<int:child_id>/delete/', views.delete_child, name='delete_child'),
@@ -37,4 +38,9 @@ urlpatterns = [
     
     # GPS Detection
     path('api/detect-locality/', views.detect_locality, name='detect_locality'),
+    
+    # Blueprint Appended Endpoints
+    path('api/triage/evaluate/', views.evaluate_triage_view, name='evaluate_triage_view'),
+    path('api/nutrition/log/', views.log_nutrition, name='log_nutrition'),
+    path('api/nutrition/query/', views.ai_nutrition_query, name='ai_nutrition_query'),
 ]

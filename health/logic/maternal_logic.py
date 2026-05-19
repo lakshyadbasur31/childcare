@@ -1,9 +1,23 @@
 from health.models import PostpartumDiet, PostpartumCareGuide, Notification
 from django.utils import timezone
 
+class DummyRecipe:
+    def __init__(self, data):
+        self.breakfast_name = data.get('breakfast_name', '')
+        self.breakfast_details = data.get('breakfast_details', '')
+        self.lunch_name = data.get('lunch_name', '')
+        self.lunch_details = data.get('lunch_details', '')
+        self.snack_name = data.get('snack_name', '')
+        self.snack_details = data.get('snack_details', '')
+        self.dinner_name = data.get('dinner_name', '')
+        self.dinner_details = data.get('dinner_details', '')
+        self.ingredients = data.get('ingredients', '')
+        self.benefits = data.get('benefits', '')
+
 def get_postpartum_context(mother):
     """
     Calculates the current phase and day of recovery for a mother.
+    Integrated with a 7-day rotating regional matrix.
     """
     days_since_delivery = (timezone.now().date() - mother.delivery_date).days + 1
     
@@ -17,36 +31,21 @@ def get_postpartum_context(mother):
     else:
         phase = 3 # Maintenance
         
-    # Get recipe for the current day and region
-    day_mod = ((days_since_delivery - 1) % 40) + 1
-    region = mother.user.locality.region_tag if mother.user.locality else 'SOUTH_INDIA'
-    recipe = PostpartumDiet.objects.filter(
-        day_number=day_mod, 
-        region_tag=region,
-        diet_type=mother.diet_preference
-    ).first()
+    # Generate the dynamic 7-day rotating regional menu
+    from .recommender import generate_maternal_7_day_plan
+    plan = generate_maternal_7_day_plan(mother, phase)
     
-    if not recipe:
-        recipe = PostpartumDiet.objects.filter(
-            day_number=day_mod, 
-            region_tag=region,
-            diet_type='veg'
-        ).first()
+    # Get today's and tomorrow's day names
+    today_name = timezone.now().strftime('%A')
+    import datetime
+    tomorrow_name = (timezone.now() + datetime.timedelta(days=1)).strftime('%A')
+    
+    today_data = plan.get(today_name)
+    tomorrow_data = plan.get(tomorrow_name)
+    
+    recipe = DummyRecipe(today_data)
+    alternate_recipe = DummyRecipe(tomorrow_data)
         
-    # Fetch an alternate recipe from the same phase and preference
-    alternate_recipe = PostpartumDiet.objects.filter(
-        phase=recipe.phase if recipe else phase,
-        region_tag=region,
-        diet_type=mother.diet_preference
-    ).exclude(day_number=day_mod).order_by('?').first()
-    
-    if not alternate_recipe:
-        alternate_recipe = PostpartumDiet.objects.filter(
-            phase=recipe.phase if recipe else phase,
-            region_tag=region,
-            diet_type='veg'
-        ).exclude(day_number=day_mod).order_by('?').first()
-    
     # Get current week for the roadmap
     current_week = (days_since_delivery // 7) + 1
     guide = PostpartumCareGuide.objects.filter(
@@ -79,11 +78,63 @@ def get_postpartum_context(mother):
         "Journal one positive thing that happened today, no matter how small."
     ]
 
+    def apply_allergy_warning(diet):
+        if not diet or not hasattr(mother, 'allergies') or not mother.allergies:
+            return diet
+        allergies = [a.strip().lower() for a in mother.allergies.split(',') if a.strip()]
+        if not allergies: return diet
+        
+        substitutes = {
+            'dairy': 'Almond Milk',
+            'milk': 'Almond Milk',
+            'peanut': 'Almonds',
+            'peanuts': 'Almonds',
+            'gluten': 'Quinoa',
+            'wheat': 'Millet',
+            'egg': 'Tofu',
+            'eggs': 'Tofu',
+            'nut': 'Roasted Seeds',
+            'nuts': 'Roasted Seeds',
+            'soy': 'Lentils',
+            'seafood': 'Beans',
+            'fish': 'Beans'
+        }
+        
+        subs_messages = []
+        import re
+        for a in allergies:
+            if a in substitutes:
+                sub_text = substitutes[a]
+                subs_messages.append(f"{a.title()} with {sub_text}")
+                
+                # Dynamically replace occurrences in the text
+                pattern = re.compile(re.escape(a), re.IGNORECASE)
+                diet.breakfast_details = pattern.sub(sub_text, diet.breakfast_details)
+                diet.lunch_details = pattern.sub(sub_text, diet.lunch_details)
+                diet.snack_details = pattern.sub(sub_text, diet.snack_details)
+                diet.dinner_details = pattern.sub(sub_text, diet.dinner_details)
+                
+                diet.breakfast_name = pattern.sub(sub_text, diet.breakfast_name)
+                diet.lunch_name = pattern.sub(sub_text, diet.lunch_name)
+                diet.snack_name = pattern.sub(sub_text, diet.snack_name)
+                diet.dinner_name = pattern.sub(sub_text, diet.dinner_name)
+            else:
+                subs_messages.append(f"{a.title()} with a safe alternative")
+                
+        warning = f" ⚠️ [Allergy Alert: Substituted {'; '.join(subs_messages)}]"
+        
+        # Attach warning to text fields in-memory if allergens might be present
+        diet.breakfast_details += warning
+        diet.lunch_details += warning
+        diet.snack_details += warning
+        diet.dinner_details += warning
+        return diet
+
     return {
         'day_number': days_since_delivery,
         'phase': phase,
-        'recipe': recipe,
-        'alternate_recipe': alternate_recipe,
+        'recipe': apply_allergy_warning(recipe),
+        'alternate_recipe': apply_allergy_warning(alternate_recipe),
         'guide': guide,
         'week_number': current_week,
         'daily_affirmation': AFFIRMATIONS[(days_since_delivery - 1) % len(AFFIRMATIONS)],
@@ -115,3 +166,46 @@ def check_maternal_red_flags(metric):
         )
         return True
     return False
+
+def get_chronological_phase(postpartum_day):
+    """
+    Blueprint: Chronologically segment logged vitals into programmatic phases.
+    """
+    if postpartum_day is None:
+        return "Unknown Phase"
+    if postpartum_day <= 3:
+        return "Critical Recovery"
+    elif postpartum_day <= 10:
+        return "Early Healing"
+    elif postpartum_day <= 21:
+        return "Active Recovery"
+    elif postpartum_day <= 40:
+        return "Full Restoration"
+    else:
+        return "Maintenance"
+
+def evaluate_maternal_triage(metric):
+    """
+    Blueprint Required: Rule-based triage flags without overwriting old logic.
+    """
+    flags = []
+    symptoms = [s.lower() for s in metric.symptoms] if metric.symptoms else []
+    
+    systolic_high = metric.systolic_bp and metric.systolic_bp > 140
+    severe_headache = any('headache' in s or 'severe_headache' in s for s in symptoms)
+    visual_changes = any('vision' in s or 'vision_blurring' in s for s in symptoms)
+    bleeding = any('bleeding' in s or 'heavy_bleeding' in s for s in symptoms)
+    fever = any('fever' in s for s in symptoms) 
+    
+    epds = metric.mother.epds_score if hasattr(metric.mother, 'epds_score') else 0
+    epds_high = epds and epds >= 13
+    
+    if systolic_high and severe_headache and visual_changes:
+        flags.append("CRITICAL: Preeclampsia symptom cluster detected")
+    elif systolic_high or bleeding:
+        flags.append("HIGH: High Blood Pressure or Excessive Bleeding")
+        
+    if fever or epds_high:
+        flags.append("MEDIUM: Persistent fever or High EPDS score")
+        
+    return flags

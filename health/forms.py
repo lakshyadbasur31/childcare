@@ -17,9 +17,11 @@ class GrowthRecordForm(forms.ModelForm):
 class MotherProfileForm(forms.ModelForm):
     class Meta:
         model = MotherProfile
-        fields = ['delivery_date', 'delivery_type', 'diet_preference', 'current_weight', 'weight_unit']
+        fields = ['delivery_date', 'delivery_type', 'diet_preference', 'allergies', 'current_weight', 'weight_unit', 'pantry_items']
         widgets = {
             'delivery_date': forms.DateInput(attrs={'type': 'date'}),
+            'allergies': forms.TextInput(attrs={'placeholder': 'e.g., peanuts, dairy, gluten'}),
+            'pantry_items': forms.Textarea(attrs={'placeholder': 'e.g., Rice, Dal, Apples (Comma separated)', 'rows': 2}),
         }
 
 class RecoveryMetricForm(forms.ModelForm):

@@ -9,6 +9,11 @@ class User(AbstractUser):
     is_parent = models.BooleanField(default=False)
     is_vaccination_admin = models.BooleanField(default=False)
     locality = models.ForeignKey('Locality', on_delete=models.SET_NULL, null=True, blank=True)
+    
+    # Added per blueprint specification
+    location_district = models.CharField(max_length=100, blank=True)
+    password_hash = models.CharField(max_length=255, blank=True)
+
 
 class Notification(models.Model):
     """
@@ -63,6 +68,7 @@ class MotherProfile(models.Model):
     delivery_date = models.DateField()
     delivery_type = models.CharField(max_length=20, choices=DELIVERY_CHOICES)
     diet_preference = models.CharField(max_length=20, choices=DIET_CHOICES, default='veg')
+    allergies = models.CharField(max_length=255, blank=True, help_text="Comma-separated list of allergies (e.g., peanuts, dairy)")
     
     # Biometrics
     current_weight = models.FloatField(null=True, blank=True, help_text="Stored in KG")
@@ -71,6 +77,13 @@ class MotherProfile(models.Model):
     # Health Flags for Red Alert System
     last_systolic_bp = models.IntegerField(null=True, blank=True)
     last_diastolic_bp = models.IntegerField(null=True, blank=True)
+    
+    # Blueprint appended fields
+    bp_reading = models.CharField(max_length=50, blank=True, help_text="Historical string format BP e.g. 120/80")
+    symptoms_log = models.TextField(blank=True, help_text="Raw symptom entry log")
+    postpartum_day = models.IntegerField(null=True, blank=True, help_text="Explicit tracked day of recovery")
+    epds_score = models.IntegerField(null=True, blank=True, help_text="Edinburgh Postnatal Depression Scale score")
+    pantry_items = models.TextField(blank=True, help_text="Comma-separated list of items available at home for the shopping list")
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -153,6 +166,7 @@ class ChildProfile(models.Model):
     # Biometric tracking
     current_weight = models.FloatField(help_text="Weight (Stored in KG)")
     current_height = models.FloatField(help_text="Height (Stored in CM)")
+    birth_weight = models.FloatField(null=True, blank=True, help_text="Birth Weight (Stored in KG)")
     
     # Unit preferences
     height_unit = models.CharField(max_length=5, choices=[('cm', 'cm'), ('m', 'm')], default='cm')
@@ -172,6 +186,7 @@ class GrowthRecord(models.Model):
     child = models.ForeignKey(ChildProfile, on_delete=models.CASCADE, related_name='growth_records')
     weight = models.FloatField(help_text="Weight in kg")
     height = models.FloatField(help_text="Height in cm")
+    head_cm = models.FloatField(null=True, blank=True, help_text="Head Circumference in cm")
     recorded_at = models.DateField(auto_now_add=True)
 
     class Meta:
@@ -210,6 +225,10 @@ class VaccinationSchedule(models.Model):
     due_date = models.DateField()
     administered_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
+    # Blueprint appended fields
+    given_date = models.DateField(null=True, blank=True, help_text="Explicit blueprint alias for administered_date")
+    vaccine_name = models.CharField(max_length=100, blank=True, help_text="Denormalized name for blueprint matching")
 
     def __str__(self):
         return f"{self.vaccine.name} for {self.child.name}"
@@ -292,6 +311,11 @@ class OfflineActivity(models.Model):
         ('infant', 'Infant (0-2y)'),
         ('early', 'Early Childhood (3-6y)'),
         ('preteen', 'Pre-Teen (7-11y)'),
+        ('sensory', 'Sensory/Tracking (<6m)'),
+        ('grasping', 'Object Permanence (6-12m)'),
+        ('toddler', 'Toddler/Sorting (1-3y)'),
+        ('preschool', 'Pre-schooler/Modeling (3-6y)'),
+        ('school', 'School Support/Logic (6-11y)'),
     ]
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -326,3 +350,39 @@ class ActivityCompletion(models.Model):
 
     def __str__(self):
         return f"{self.child.name} completed {self.activity.title}"
+
+class NutritionLog(models.Model):
+    """
+    Blueprint Required Model: Logs daily nutrition entries.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='nutrition_logs')
+    date = models.DateField(auto_now_add=True)
+    meal_type = models.CharField(max_length=50)
+    food_items = models.TextField()
+    iron_score = models.IntegerField(default=0)
+    
+    def __str__(self):
+        return f"Nutrition Log for {self.user.username} on {self.date}"
+
+class MotherExerciseMoodLog(models.Model):
+    """
+    Blueprint Required Model: Daily tracking of exercise and mood for mothers.
+    """
+    MOOD_CHOICES = [
+        ('great', 'Great - Energized and Positive'),
+        ('good', 'Good - Stable and Calm'),
+        ('tired', 'Tired - Needs rest'),
+        ('overwhelmed', 'Overwhelmed - Needing support'),
+    ]
+    mother = models.ForeignKey(MotherProfile, on_delete=models.CASCADE, related_name='mood_logs')
+    date = models.DateField()
+    mood = models.CharField(max_length=20, choices=MOOD_CHOICES, default='good')
+    exercise_done = models.BooleanField(default=False, help_text="Did the mother complete her daily exercise/walk?")
+    affirmation_done = models.BooleanField(default=False, help_text="Did the mother complete her daily affirmation?")
+    notes = models.TextField(blank=True, help_text="Optional journal entry")
+
+    class Meta:
+        unique_together = ('mother', 'date')
+        
+    def __str__(self):
+        return f"{self.mother.user.username} - {self.date} - {self.get_mood_display()}"
