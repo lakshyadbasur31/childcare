@@ -749,3 +749,93 @@ def ai_nutrition_query(request):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     return JsonResponse({'error': 'Invalid method'}, status=405)
+
+def translate_story_text(request):
+    """
+    Translates text to the specified language using deep-translator.
+    """
+    import json
+    from deep_translator import GoogleTranslator
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        text = data.get('text', '')
+        lang = data.get('lang', 'en')
+        
+        if not text:
+            return JsonResponse({'error': 'No text provided'}, status=400)
+            
+        # Map lang from en-IN, hi-IN to just en, hi etc.
+        target_lang = lang.split('-')[0]
+        if target_lang == 'en':
+            return JsonResponse({'translated_text': text})
+            
+        translator = GoogleTranslator(source='auto', target=target_lang)
+        
+        # Split text into smaller chunks if it's too large (GoogleTranslator limit is 5000 chars)
+        if len(text) > 4000:
+            chunks = [text[i:i+4000] for i in range(0, len(text), 4000)]
+            translated_chunks = [translator.translate(chunk) for chunk in chunks]
+            translated_text = " ".join(translated_chunks)
+        else:
+            translated_text = translator.translate(text)
+            
+        return JsonResponse({'translated_text': translated_text})
+    except Exception as e:
+        print(f"Translation Error: {e}")
+        # Fallback to original text if translation fails
+        return JsonResponse({'translated_text': text})
+
+def narrate_story_audio(request):
+    """
+    Generates audio for translated text using gTTS.
+    """
+    import json
+    import os
+    import tempfile
+    from gtts import gTTS
+    from deep_translator import GoogleTranslator
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        text = data.get('text', '')
+        lang = data.get('lang', 'en-IN')
+        
+        if not text:
+            return JsonResponse({'error': 'No text provided'}, status=400)
+            
+        target_lang = lang.split('-')[0]
+        
+        # 1. Translate
+        if target_lang != 'en':
+            translator = GoogleTranslator(source='auto', target=target_lang)
+            if len(text) > 4000:
+                chunks = [text[i:i+4000] for i in range(0, len(text), 4000)]
+                translated_chunks = [translator.translate(chunk) for chunk in chunks]
+                translated_text = " ".join(translated_chunks)
+            else:
+                translated_text = translator.translate(text)
+        else:
+            translated_text = text
+            target_lang = 'en'
+            
+        # 2. Generate Audio
+        tts = gTTS(text=translated_text, lang=target_lang)
+        
+        # 3. Save to temp file
+        temp_dir = tempfile.gettempdir()
+        temp_file = os.path.join(temp_dir, f'narration_{target_lang}.mp3')
+        tts.save(temp_file)
+        
+        # 4. Return as FileResponse
+        response = FileResponse(open(temp_file, 'rb'), content_type='audio/mpeg')
+        return response
+    except Exception as e:
+        print(f"Narration Error: {e}")
+        return JsonResponse({'error': str(e)}, status=500)

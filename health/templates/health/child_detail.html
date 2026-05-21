@@ -295,6 +295,27 @@
             </div>
 
             {% if brain_context.activity %}
+            
+            {% if brain_context.suitability_reason %}
+            <!-- Premium AI Recommendation & Age-Adaptive Analysis -->
+            <div class="mb-6 p-5 bg-gradient-to-br from-indigo-50/90 via-sky-50/40 to-white rounded-2xl border border-indigo-100/80 flex gap-4 items-start shadow-sm relative overflow-hidden">
+                <!-- Glowing Accent -->
+                <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-200/20 rounded-full blur-2xl pointer-events-none"></div>
+                
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-lg shadow-md shadow-indigo-200 flex-shrink-0">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div>
+                    <h5 class="text-[10px] font-black text-indigo-800 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                        <span class="inline-block w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping"></span>
+                        AI Age-Adaptive Recommendation
+                    </h5>
+                    <p class="text-xs font-bold text-slate-600 leading-relaxed mb-1">{{ brain_context.suitability_reason }}</p>
+                    <p class="text-[10px] font-bold text-indigo-500/80">Specifically tailored for {{ child.name }} ({{ age_months }} Months Old)</p>
+                </div>
+            </div>
+            {% endif %}
+            
             <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100 mb-6">
                 <h4 class="text-xl font-black text-slate-800 mb-4">{{ brain_context.activity.title }}</h4>
                 <p class="text-slate-600 leading-relaxed mb-6">{{ brain_context.activity.description }}</p>
@@ -395,11 +416,27 @@
                         </h3>
                         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Tonight's Quest in {{ child.locality.name|default:"the Village" }}</p>
                     </div>
-                    {% if brain_context.story %}
-                    <button onclick="shuffleStory('{{ child.id }}')" id="shuffle-btn" class="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-lg flex items-center gap-2 group/btn z-20">
-                        <i class="fas fa-rotate transition-transform duration-500" id="shuffle-icon"></i> ✨ Switch Story
-                    </button>
-                    {% endif %}
+                    <div class="flex gap-2 z-20">
+                        {% if brain_context.story %}
+                        <select id="narrate-lang" class="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white px-2 py-2 rounded-xl text-xs font-bold transition-all shadow-lg outline-none cursor-pointer">
+                            <option value="en-IN" class="text-slate-800">English (India)</option>
+                            <option value="hi-IN" class="text-slate-800">Hindi</option>
+                            <option value="ta-IN" class="text-slate-800">Tamil</option>
+                            <option value="te-IN" class="text-slate-800">Telugu</option>
+                            <option value="mr-IN" class="text-slate-800">Marathi</option>
+                            <option value="bn-IN" class="text-slate-800">Bengali</option>
+                            <option value="gu-IN" class="text-slate-800">Gujarati</option>
+                            <option value="kn-IN" class="text-slate-800">Kannada</option>
+                            <option value="ml-IN" class="text-slate-800">Malayalam</option>
+                        </select>
+                        <button onclick="narrateStory()" id="narrate-btn" class="bg-indigo-500/80 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-lg flex items-center gap-2 group/btn">
+                            <i class="fas fa-volume-up" id="narrate-icon"></i> <span>Narrate</span>
+                        </button>
+                        <button onclick="shuffleStory('{{ child.id }}')" id="shuffle-btn" class="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-lg flex items-center gap-2 group/btn">
+                            <i class="fas fa-rotate transition-transform duration-500" id="shuffle-icon"></i> ✨ Switch Story
+                        </button>
+                        {% endif %}
+                    </div>
                 </div>
 
                 {% if brain_context.story %}
@@ -571,6 +608,15 @@
         
         if (!titleEl || !contentEl) return;
         
+        // Stop any ongoing narration
+        if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+            isNarrating = false;
+            currentTranslatedText = ''; // Reset translation cache for new story
+            const nIcon = document.getElementById('narrate-icon');
+            if (nIcon) nIcon.className = 'fas fa-volume-up';
+        }
+
         // Spin icon
         iconEl.classList.add('rotate-180');
         btnEl.classList.add('scale-95');
@@ -736,6 +782,80 @@
                     plugins: { legend: { position: 'top' } }
                 }
             });
+        }
+    });
+
+    // Text to Speech logic
+    let isNarrating = false;
+    let audioElement = null;
+
+    async function narrateStory() {
+        const text = document.getElementById('story-text')?.innerText;
+        if (!text) return;
+
+        const icon = document.getElementById('narrate-icon');
+        const lang = document.getElementById('narrate-lang').value;
+
+        if (isNarrating && audioElement) {
+            audioElement.pause();
+            audioElement.currentTime = 0;
+            isNarrating = false;
+            icon.className = 'fas fa-volume-up';
+            return;
+        }
+
+        icon.className = 'fas fa-spinner fa-spin'; // Loading state
+
+        try {
+            const res = await fetch('/api/narrate/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ text: text, lang: lang })
+            });
+
+            if (res.ok) {
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                
+                if (audioElement) {
+                    audioElement.pause();
+                }
+                
+                audioElement = new Audio(url);
+                audioElement.onended = () => {
+                    isNarrating = false;
+                    icon.className = 'fas fa-volume-up';
+                    URL.revokeObjectURL(url);
+                };
+                
+                audioElement.onerror = () => {
+                    isNarrating = false;
+                    icon.className = 'fas fa-volume-up';
+                    URL.revokeObjectURL(url);
+                    console.error("Audio playback error");
+                }
+                
+                audioElement.play();
+                isNarrating = true;
+                icon.className = 'fas fa-stop';
+            } else {
+                throw new Error("Failed to generate audio");
+            }
+        } catch (e) {
+            console.error('Narration failed', e);
+            isNarrating = false;
+            icon.className = 'fas fa-volume-up';
+            alert("Could not generate audio for this language. Please check your connection.");
+        }
+    }
+
+    // Stop narration if user navigates away or switches story
+    window.addEventListener('beforeunload', () => {
+        if (audioElement) {
+            audioElement.pause();
         }
     });
 </script>

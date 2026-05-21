@@ -43,4 +43,8 @@ urlpatterns = [
     path('api/triage/evaluate/', views.evaluate_triage_view, name='evaluate_triage_view'),
     path('api/nutrition/log/', views.log_nutrition, name='log_nutrition'),
     path('api/nutrition/query/', views.ai_nutrition_query, name='ai_nutrition_query'),
+    
+    # Translation & Narration
+    path('api/translate/', views.translate_story_text, name='translate_story_text'),
+    path('api/narrate/', views.narrate_story_audio, name='narrate_story_audio'),
 ]
