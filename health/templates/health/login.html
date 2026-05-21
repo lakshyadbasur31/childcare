@@ -46,7 +46,13 @@
             </button>
         </form>
 
-        <div class="mt-8 text-center relative z-10 border-t border-slate-100 pt-6">
+        <div class="mt-6 text-center relative z-10">
+            <p class="text-sm text-slate-500 font-medium">
+                Don't have an account? <a href="{% url 'signup' %}" class="text-primary hover:underline font-bold">Sign Up</a>
+            </p>
+        </div>
+
+        <div class="mt-6 text-center relative z-10 border-t border-slate-100 pt-6">
             <p class="text-sm text-slate-500 font-medium">
                 Test Accounts:<br>
                 <span class="text-primary font-bold">parent_test</span> | <span class="text-secondary font-bold">admin_test</span>

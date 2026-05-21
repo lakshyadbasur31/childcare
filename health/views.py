@@ -20,6 +20,132 @@ def is_admin(user):
 
 # --- DASHBOARDS ---
 
+def signup(request):
+    if request.user.is_authenticated:
+        return redirect('index')
+        
+    from django.db import transaction
+    from django.contrib.auth import login as auth_login
+    from .models import User, MotherProfile, ChildProfile, Locality
+    from .logic.scheduler import generate_schedule
+    from .logic.recommender import get_nutrition_recommendation
+    from datetime import datetime, date
+
+    localities = Locality.objects.all()
+    errors = {}
+    
+    if request.method == 'POST':
+        # Account Details
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        phone_number = request.POST.get('phone_number')
+        preferred_language = request.POST.get('preferred_language', 'en')
+        locality_id = request.POST.get('locality')
+        
+        # Mother Details
+        delivery_date = request.POST.get('delivery_date')
+        delivery_type = request.POST.get('delivery_type')
+        diet_preference = request.POST.get('diet_preference', 'veg')
+        allergies = request.POST.get('allergies', '')
+        mother_weight = request.POST.get('mother_weight')
+        pantry_items = request.POST.get('pantry_items', '')
+        
+        # Child Details (Optional)
+        child_name = request.POST.get('child_name')
+        child_date_of_birth = request.POST.get('child_date_of_birth')
+        child_gender = request.POST.get('child_gender')
+        child_weight = request.POST.get('child_weight')
+        child_height = request.POST.get('child_height')
+        
+        # Validation
+        if not username:
+            errors['username'] = "Username is required."
+        elif User.objects.filter(username=username).exists():
+            errors['username'] = "Username is already taken."
+            
+        if not password or len(password) < 6:
+            errors['password'] = "Password must be at least 6 characters."
+            
+        if not delivery_date:
+            errors['delivery_date'] = "Delivery date is required for mother's profile."
+            
+        # Age validation for child if child details are provided
+        if child_name:
+            if not child_date_of_birth:
+                errors['child_date_of_birth'] = "Child date of birth is required if child details are provided."
+            else:
+                try:
+                    dob = datetime.strptime(child_date_of_birth, '%Y-%m-%d').date()
+                    today = date.today()
+                    if dob > today:
+                        errors['child_date_of_birth'] = "Child date of birth cannot be in the future."
+                    else:
+                        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+                        if age > 13:
+                            errors['child_date_of_birth'] = "Child age cannot exceed 13 years."
+                except ValueError:
+                    errors['child_date_of_birth'] = "Invalid date format."
+                    
+            if not child_weight:
+                errors['child_weight'] = "Child weight is required if child details are provided."
+            if not child_height:
+                errors['child_height'] = "Child height is required if child details are provided."
+                
+        if not errors:
+            try:
+                # Wrap user, mother profile, child profile, and schedule initialization in a single atomic transaction
+                with transaction.atomic():
+                    # 1. Create User
+                    user = User.objects.create_user(
+                        username=username,
+                        password=password,
+                        phone_number=phone_number,
+                        preferred_language=preferred_language,
+                        is_parent=True
+                    )
+                    if locality_id:
+                        user.locality_id = int(locality_id)
+                        user.save()
+                        
+                    # 2. Create MotherProfile
+                    mother = MotherProfile.objects.create(
+                        user=user,
+                        delivery_date=delivery_date,
+                        delivery_type=delivery_type,
+                        diet_preference=diet_preference,
+                        allergies=allergies,
+                        current_weight=float(mother_weight) if mother_weight else None,
+                        pantry_items=pantry_items
+                    )
+                    
+                    # 3. Create ChildProfile (if provided)
+                    if child_name:
+                        child = ChildProfile.objects.create(
+                            parent=user,
+                            name=child_name,
+                            date_of_birth=child_date_of_birth,
+                            gender=child_gender,
+                            current_weight=float(child_weight),
+                            current_height=float(child_height),
+                            locality_id=int(locality_id) if locality_id else None
+                        )
+                        # Initialize vaccination schedule
+                        generate_schedule(child)
+                        # Initialize nutrition recommendation
+                        get_nutrition_recommendation(child)
+                
+                # Automatically log in the user and redirect to parent_dashboard
+                auth_login(request, user)
+                return redirect('parent_dashboard')
+            except Exception as e:
+                errors['non_field'] = f"An error occurred during registration: {str(e)}"
+                
+    return render(request, 'health/signup.html', {
+        'localities': localities,
+        'errors': errors,
+        'data': request.POST
+    })
+
 @login_required
 def index(request):
     if request.user.is_vaccination_admin:
@@ -68,6 +194,13 @@ def maternal_dashboard(request):
         return redirect('manage_mother_profile')
         
     maternal_context = get_postpartum_context(mother)
+    
+    try:
+        from .recovery.exercise_progression import get_exercise_guidance
+        exercise_guidance = get_exercise_guidance(mother)
+    except Exception:
+        exercise_guidance = None
+        
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     metric_form = RecoveryMetricForm()
     children = ChildProfile.objects.filter(parent=request.user).order_by('-created_at')
@@ -133,6 +266,7 @@ def maternal_dashboard(request):
     return render(request, 'health/maternal_dashboard.html', {
         'mother': mother,
         'maternal_context': maternal_context,
+        'exercise_guidance': exercise_guidance,
         'notifications': notifications,
         'metric_form': metric_form,
         'children': children,
@@ -750,12 +884,26 @@ def ai_nutrition_query(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     return JsonResponse({'error': 'Invalid method'}, status=405)
 
+def set_language(request):
+    """
+    Sets the user's preferred language in profile and session.
+    """
+    if request.method == 'POST':
+        lang = request.POST.get('language')
+        if lang in ['en', 'kn', 'hi', 'te', 'ta']:
+            if request.user.is_authenticated:
+                request.user.preferred_language = lang
+                request.user.save()
+            request.session['preferred_language'] = lang
+    referer = request.META.get('HTTP_REFERER', '/')
+    return redirect(referer)
+
 def translate_story_text(request):
     """
-    Translates text to the specified language using deep-translator.
+    Translates text to the specified language using deep-translator with caching.
     """
     import json
-    from deep_translator import GoogleTranslator
+    from health.translation.services.translation_service import TranslationService
 
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid method'}, status=405)
@@ -768,26 +916,84 @@ def translate_story_text(request):
         if not text:
             return JsonResponse({'error': 'No text provided'}, status=400)
             
-        # Map lang from en-IN, hi-IN to just en, hi etc.
-        target_lang = lang.split('-')[0]
-        if target_lang == 'en':
-            return JsonResponse({'translated_text': text})
-            
-        translator = GoogleTranslator(source='auto', target=target_lang)
-        
-        # Split text into smaller chunks if it's too large (GoogleTranslator limit is 5000 chars)
-        if len(text) > 4000:
-            chunks = [text[i:i+4000] for i in range(0, len(text), 4000)]
-            translated_chunks = [translator.translate(chunk) for chunk in chunks]
-            translated_text = " ".join(translated_chunks)
-        else:
-            translated_text = translator.translate(text)
-            
+        translated_text = TranslationService.translate(text, lang)
         return JsonResponse({'translated_text': translated_text})
     except Exception as e:
         print(f"Translation Error: {e}")
         # Fallback to original text if translation fails
         return JsonResponse({'translated_text': text})
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def translate_batch(request):
+    """
+    Translates an array of text strings dynamically for the UI.
+    """
+    import json
+    from health.translation.services.translation_service import TranslationService
+    from deep_translator import GoogleTranslator
+    from django.core.cache import cache
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=405)
+        
+    try:
+        data = json.loads(request.body)
+        texts = data.get('texts', [])
+        lang = data.get('lang', 'en')
+        
+        if not texts or lang == 'en':
+            return JsonResponse({'translations': {}})
+            
+        target_lang = lang.split('-')[0].lower()
+        
+        translations = {}
+        to_translate = []
+        
+        for t in texts:
+            cache_key = TranslationService.get_cache_key(t, target_lang)
+            cached = cache.get(cache_key)
+            if cached:
+                translations[t] = cached
+            else:
+                to_translate.append(t)
+                
+        if to_translate:
+            # Manually batch strings to make only 1 HTTP request per chunk to avoid rate limits
+            chunk_size = 100
+            for i in range(0, len(to_translate), chunk_size):
+                chunk = to_translate[i:i+chunk_size]
+                try:
+                    clean_chunk = [str(c).replace('\n', ' ') for c in chunk]
+                    combined = " \n\n ".join(clean_chunk)
+                    
+                    translator = GoogleTranslator(source='auto', target=target_lang)
+                    res_combined = translator.translate(combined)
+                    
+                    if res_combined:
+                        results = [s.strip() for s in res_combined.split('\n\n')]
+                    else:
+                        results = []
+                        
+                    if len(results) != len(chunk):
+                        # Slow fallback if Google swallowed a newline
+                        results = translator.translate_batch(chunk)
+                        
+                    for orig, res in zip(chunk, results):
+                        if res:
+                            translations[orig] = res
+                            cache.set(TranslationService.get_cache_key(orig, target_lang), res, 86400)
+                        else:
+                            translations[orig] = orig
+                except Exception as e:
+                    print(f"Batch chunk error: {e}")
+                    for orig in chunk:
+                        translations[orig] = orig
+                        
+        return JsonResponse({'translations': translations})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 def narrate_story_audio(request):
     """
@@ -797,7 +1003,7 @@ def narrate_story_audio(request):
     import os
     import tempfile
     from gtts import gTTS
-    from deep_translator import GoogleTranslator
+    from health.translation.services.translation_service import TranslationService
 
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid method'}, status=405)
@@ -812,15 +1018,9 @@ def narrate_story_audio(request):
             
         target_lang = lang.split('-')[0]
         
-        # 1. Translate
+        # 1. Translate using cached TranslationService
         if target_lang != 'en':
-            translator = GoogleTranslator(source='auto', target=target_lang)
-            if len(text) > 4000:
-                chunks = [text[i:i+4000] for i in range(0, len(text), 4000)]
-                translated_chunks = [translator.translate(chunk) for chunk in chunks]
-                translated_text = " ".join(translated_chunks)
-            else:
-                translated_text = translator.translate(text)
+            translated_text = TranslationService.translate(text, target_lang)
         else:
             translated_text = text
             target_lang = 'en'
@@ -839,3 +1039,4 @@ def narrate_story_audio(request):
     except Exception as e:
         print(f"Narration Error: {e}")
         return JsonResponse({'error': str(e)}, status=500)
+

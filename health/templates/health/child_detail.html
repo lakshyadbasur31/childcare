@@ -93,33 +93,52 @@
 
 <!-- Navigation Tabs -->
 <div class="flex gap-4 mb-8 overflow-x-auto pb-2 scrollbar-hide tab-links">
-    <button onclick="openTab(event, 'nutrition')" class="tab-btn bg-slate-800 text-white px-6 py-3 rounded-full font-bold shadow-md shadow-slate-900/50 border border-slate-700 whitespace-nowrap active relative">
-        <i class="fas fa-bowl-food mr-2"></i> Mentor Engine
-        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1.5 bg-sky-400 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.8)] tab-indicator block"></div>
+    {% if age_months < 6 %}
+    <button onclick="openTab(event, 'immunization')" class="tab-btn bg-slate-800 text-white px-6 py-3 rounded-full font-bold shadow-md shadow-slate-900/50 border border-slate-700 whitespace-nowrap active relative" id="tab-immunization">
+        <i class="fas fa-shield-virus mr-2 text-rose-400"></i> Priority: Immunization
+        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1.5 bg-rose-400 rounded-full shadow-[0_0_10px_rgba(244,63,94,0.8)] tab-indicator block"></div>
     </button>
-    <button onclick="openTab(event, 'brain')" class="tab-btn bg-slate-900/80 hover:bg-slate-800 text-slate-300 px-6 py-3 rounded-full font-semibold border border-slate-800 whitespace-nowrap transition-colors relative">
-        <i class="fas fa-brain-circuit mr-2"></i> Brain Quest
+    <button onclick="openTab(event, 'nutrition')" class="tab-btn bg-slate-900/80 hover:bg-slate-800 text-slate-300 px-6 py-3 rounded-full font-semibold border border-slate-800 whitespace-nowrap transition-colors relative" id="tab-nutrition">
+        <i class="fas fa-baby-bottle mr-2 text-sky-400"></i> Feeding & Sleep
         <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1.5 bg-sky-400 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.8)] tab-indicator hidden"></div>
     </button>
-    <button onclick="openTab(event, 'immunization')" class="tab-btn bg-slate-900/80 hover:bg-slate-800 text-slate-300 px-6 py-3 rounded-full font-semibold border border-slate-800 whitespace-nowrap transition-colors relative">
-        <i class="fas fa-shield-virus mr-2"></i> Immunization
-        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1.5 bg-sky-400 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.8)] tab-indicator hidden"></div>
-    </button>
-    <button onclick="openTab(event, 'growth')" class="tab-btn bg-slate-900/80 hover:bg-slate-800 text-slate-300 px-6 py-3 rounded-full font-semibold border border-slate-800 whitespace-nowrap transition-colors relative">
+    <button onclick="openTab(event, 'growth')" class="tab-btn bg-slate-900/80 hover:bg-slate-800 text-slate-300 px-6 py-3 rounded-full font-semibold border border-slate-800 whitespace-nowrap transition-colors relative" id="tab-growth">
         <i class="fas fa-chart-line mr-2"></i> Growth
         <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1.5 bg-sky-400 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.8)] tab-indicator hidden"></div>
     </button>
+    <button onclick="openTab(event, 'brain')" class="tab-btn bg-slate-900/80 hover:bg-slate-800 text-slate-300 px-6 py-3 rounded-full font-semibold border border-slate-800 whitespace-nowrap transition-colors relative" id="tab-brain">
+        <i class="fas fa-brain-circuit mr-2"></i> Sensory Play
+        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1.5 bg-sky-400 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.8)] tab-indicator hidden"></div>
+    </button>
+    {% else %}
+    <button onclick="openTab(event, 'nutrition')" class="tab-btn bg-slate-800 text-white px-6 py-3 rounded-full font-bold shadow-md shadow-slate-900/50 border border-slate-700 whitespace-nowrap active relative" id="tab-nutrition">
+        <i class="fas fa-bowl-food mr-2"></i> Mentor Engine
+        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1.5 bg-sky-400 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.8)] tab-indicator block"></div>
+    </button>
+    <button onclick="openTab(event, 'brain')" class="tab-btn bg-slate-900/80 hover:bg-slate-800 text-slate-300 px-6 py-3 rounded-full font-semibold border border-slate-800 whitespace-nowrap transition-colors relative" id="tab-brain">
+        <i class="fas fa-brain-circuit mr-2"></i> Brain Quest
+        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1.5 bg-sky-400 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.8)] tab-indicator hidden"></div>
+    </button>
+    <button onclick="openTab(event, 'immunization')" class="tab-btn bg-slate-900/80 hover:bg-slate-800 text-slate-300 px-6 py-3 rounded-full font-semibold border border-slate-800 whitespace-nowrap transition-colors relative" id="tab-immunization">
+        <i class="fas fa-shield-virus mr-2"></i> Immunization
+        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1.5 bg-sky-400 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.8)] tab-indicator hidden"></div>
+    </button>
+    <button onclick="openTab(event, 'growth')" class="tab-btn bg-slate-900/80 hover:bg-slate-800 text-slate-300 px-6 py-3 rounded-full font-semibold border border-slate-800 whitespace-nowrap transition-colors relative" id="tab-growth">
+        <i class="fas fa-chart-line mr-2"></i> Growth
+        <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-1.5 bg-sky-400 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.8)] tab-indicator hidden"></div>
+    </button>
+    {% endif %}
 </div>
 
 <!-- Mentor Engine Tab -->
-<div id="nutrition" class="space-y-8 tab-content block">
+<div id="nutrition" class="space-y-8 tab-content {% if age_months < 6 %}hidden{% else %}block{% endif %}">
 
     <!-- Diet Plan -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="lg:col-span-2 bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100">
             <h3 class="text-lg font-bold text-slate-800 mb-6 flex justify-between items-center">
-                7-Day Regional Meal Plan
-                <span class="text-xs font-bold text-primary bg-indigo-50 px-3 py-1 rounded-full uppercase">{{ child.locality.region_tag }} STAPLES</span>
+                {% if age_months < 6 %}Infant Feeding & Sleep Cycle{% else %}7-Day Regional Meal Plan{% endif %}
+                <span class="text-xs font-bold text-primary bg-indigo-50 px-3 py-1 rounded-full uppercase">{% if age_months < 6 %}PEDIATRIC GUIDELINES{% else %}{{ child.locality.region_tag }} STAPLES{% endif %}</span>
             </h3>
             
             <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 mb-6">
@@ -468,7 +487,7 @@
 
 
 <!-- Zoomable Immunization Roadmap Tab -->
-<div id="immunization" class="bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100 tab-content hidden">
+<div id="immunization" class="bg-white p-8 rounded-[2rem] shadow-dribbble border border-slate-100 tab-content {% if age_months < 6 %}block{% else %}hidden{% endif %}">
     <div class="flex justify-between items-center mb-8">
         <h3 class="text-2xl font-bold text-slate-800">High-Stakes Immunization Engine</h3>
         <div class="flex gap-2">

@@ -223,15 +223,38 @@
                 </div>
 
                 <!-- Exercise Guide -->
-                <div class="p-6 bg-emerald-50 rounded-[2rem] border border-emerald-100">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 bg-emerald-200 rounded-full flex items-center justify-center text-emerald-700">
-                            <i class="fas fa-person-walking"></i>
+                <div class="p-6 bg-emerald-50/80 backdrop-blur-md rounded-[2rem] border border-emerald-200 shadow-soft">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-emerald-200/50 rounded-full flex items-center justify-center text-emerald-700 backdrop-blur-sm border border-emerald-300">
+                                <i class="fas fa-person-walking"></i>
+                            </div>
+                            <h4 class="text-emerald-800 font-black text-sm uppercase tracking-tighter">Exercise Guide</h4>
                         </div>
-                        <h4 class="text-emerald-800 font-black text-sm uppercase tracking-tighter">Exercise</h4>
+                        {% if exercise_guidance %}
+                            {% if exercise_guidance.status == 'restricted' %}
+                                <span class="bg-amber-100/80 text-amber-800 px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-wider border border-amber-300 shadow-sm backdrop-blur-md">RESTRICTED</span>
+                            {% else %}
+                                <span class="bg-emerald-100/80 text-emerald-800 px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-wider border border-emerald-300 shadow-sm backdrop-blur-md">CLEARED</span>
+                            {% endif %}
+                        {% endif %}
                     </div>
                     <h5 class="font-bold text-slate-800 mb-2">{{ maternal_context.guide.exercise_title }}</h5>
-                    <p class="text-xs text-slate-600">{{ maternal_context.guide.exercise_desc }}</p>
+                    <p class="text-xs text-slate-600 mb-4 leading-relaxed">{{ maternal_context.guide.exercise_desc }}</p>
+                    
+                    {% if exercise_guidance %}
+                        <div class="bg-white/60 p-4 rounded-2xl border border-emerald-100 mb-3 shadow-sm backdrop-blur-sm">
+                            <p class="text-[10px] font-black text-emerald-600 uppercase tracking-wider mb-1"><i class="fas fa-user-doctor mr-1"></i> Status: {{ exercise_guidance.days_postpartum }} Days Postpartum</p>
+                            <p class="text-xs text-slate-700 font-medium">{{ exercise_guidance.recommendation }}</p>
+                        </div>
+                        {% if exercise_guidance.warnings %}
+                            {% for warning in exercise_guidance.warnings %}
+                            <div class="bg-amber-50/80 p-3 rounded-2xl border border-amber-200 text-amber-800 text-[11px] font-bold flex gap-3 shadow-sm backdrop-blur-sm">
+                                <i class="fas fa-triangle-exclamation mt-0.5 text-amber-600"></i> <span class="leading-relaxed">{{ warning }}</span>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
                 </div>
             </div>
             {% endif %}

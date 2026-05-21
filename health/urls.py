@@ -12,6 +12,7 @@ urlpatterns = [
     # Auth
     path('login/', auth_views.LoginView.as_view(template_name='health/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('signup/', views.signup, name='signup'),
     
     # Child & Health
     path('child/add/', views.add_child, name='add_child'),
@@ -46,5 +47,7 @@ urlpatterns = [
     
     # Translation & Narration
     path('api/translate/', views.translate_story_text, name='translate_story_text'),
+    path('api/translate-batch/', views.translate_batch, name='translate_batch'),
     path('api/narrate/', views.narrate_story_audio, name='narrate_story_audio'),
+    path('api/set-language/', views.set_language, name='set_language'),
 ]

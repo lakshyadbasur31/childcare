@@ -124,3 +124,12 @@ AUTH_USER_MODEL = 'health.User'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'index'
 LOGOUT_REDIRECT_URL = 'login'
+
+# Local Memory Cache for translation caching
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'translation_cache',
+    }
+}
+

@@ -1,6 +1,16 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, User as DjangoUser
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from datetime import date
+
+def validate_child_age(value):
+    today = date.today()
+    if value > today:
+        raise ValidationError("Date of birth cannot be in the future.")
+    age = today.year - value.year - ((today.month, today.day) < (value.month, value.day))
+    if age > 13:
+        raise ValidationError("Child age cannot exceed 13 years.")
 
 class User(AbstractUser):
     """
@@ -13,6 +23,20 @@ class User(AbstractUser):
     # Added per blueprint specification
     location_district = models.CharField(max_length=100, blank=True)
     password_hash = models.CharField(max_length=255, blank=True)
+    
+    # Custom fields for notification and language support
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    preferred_language = models.CharField(
+        max_length=10,
+        choices=[
+            ('en', 'English'),
+            ('kn', 'Kannada'),
+            ('hi', 'Hindi'),
+            ('te', 'Telugu'),
+            ('ta', 'Tamil')
+        ],
+        default='en'
+    )
 
 
 class Notification(models.Model):
@@ -84,6 +108,8 @@ class MotherProfile(models.Model):
     postpartum_day = models.IntegerField(null=True, blank=True, help_text="Explicit tracked day of recovery")
     epds_score = models.IntegerField(null=True, blank=True, help_text="Edinburgh Postnatal Depression Scale score")
     pantry_items = models.TextField(blank=True, help_text="Comma-separated list of items available at home for the shopping list")
+    postpartum_metadata = models.JSONField(default=dict, blank=True)
+    priority_mode_metadata = models.JSONField(default=dict, blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -159,7 +185,7 @@ class ChildProfile(models.Model):
     
     parent = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='children', null=True)
     name = models.CharField(max_length=200)
-    date_of_birth = models.DateField()
+    date_of_birth = models.DateField(validators=[validate_child_age])
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     locality = models.ForeignKey(Locality, on_delete=models.SET_NULL, null=True)
     
@@ -386,3 +412,14 @@ class MotherExerciseMoodLog(models.Model):
         
     def __str__(self):
         return f"{self.mother.user.username} - {self.date} - {self.get_mood_display()}"
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=Notification)
+def send_notification_sms(sender, instance, created, **kwargs):
+    if created and instance.user and instance.user.phone_number:
+        from health.notifications.services.messaging_service import dispatch_sms_async
+        message = f"{instance.title}: {instance.message}"
+        dispatch_sms_async(instance.user.phone_number, message)
+

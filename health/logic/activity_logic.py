@@ -73,16 +73,12 @@ def get_brain_development_context(child, story_id=None):
     seed = int(today.strftime('%Y%m%d')) + child.id
     rng = random.Random(seed)
     
-    activities = list(OfflineActivity.objects.filter(age_tier=tier).order_by('id'))
+    # Retrieve medically-safe activities using the rules engine
+    from health.logic.age_rules import get_medically_safe_activities
+    activities = list(get_medically_safe_activities(child).order_by('id'))
     activity = None
     if activities:
         activity = rng.choice(activities)
-    else:
-        # Fallback to the old broader categories if explicit database is empty
-        fallback_tier = 'infant' if mapped_tier == 'infant' else ('early' if mapped_tier == 'early' else 'preteen')
-        activities = list(OfflineActivity.objects.filter(age_tier=fallback_tier).order_by('id'))
-        if activities:
-            activity = rng.choice(activities)
         
     # Choose from all available bedtime stories to ensure daily variety
     stories = list(BedtimeStory.objects.all().order_by('id'))

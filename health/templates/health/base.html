@@ -90,6 +90,18 @@
                 {% endif %}
                 
                 <div class="flex items-center gap-4">
+                    <!-- Language Selector -->
+                    <form action="{% url 'set_language' %}" method="post" class="inline-block" id="lang-selector-form">
+                        {% csrf_token %}
+                        <select name="language" onchange="document.getElementById('lang-selector-form').submit()" 
+                            class="bg-slate-800 text-slate-300 text-xs font-semibold px-2.5 py-1.5 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary cursor-pointer">
+                            <option value="en" {% if user.is_authenticated and user.preferred_language == 'en' or not user.is_authenticated and request.session.preferred_language == 'en' or not user.is_authenticated and not request.session.preferred_language %}selected{% endif %}>🇬🇧 English</option>
+                            <option value="hi" {% if user.is_authenticated and user.preferred_language == 'hi' or request.session.preferred_language == 'hi' %}selected{% endif %}>🇮🇳 Hindi (हिन्दी)</option>
+                            <option value="kn" {% if user.is_authenticated and user.preferred_language == 'kn' or request.session.preferred_language == 'kn' %}selected{% endif %}>🇮🇳 Kannada (ಕನ್ನಡ)</option>
+                            <option value="te" {% if user.is_authenticated and user.preferred_language == 'te' or request.session.preferred_language == 'te' %}selected{% endif %}>🇮🇳 Telugu (తెలుగు)</option>
+                            <option value="ta" {% if user.is_authenticated and user.preferred_language == 'ta' or request.session.preferred_language == 'ta' %}selected{% endif %}>🇮🇳 Tamil (தமிழ்)</option>
+                        </select>
+                    </form>
                     {% if user.is_authenticated %}
                         <span class="text-sm font-medium text-slate-500 hidden lg:block">
                             <i class="fas fa-user-circle mr-1"></i> {{ user.username }}
@@ -162,5 +174,59 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     {% block extra_scripts %}{% endblock %}
+    
+    <!-- Dynamic UI Translation Engine -->
+    <script>
+    document.addEventListener("DOMContentLoaded", async function() {
+        const langSelect = document.querySelector('select[name="language"]');
+        const targetLang = langSelect ? langSelect.value : 'en';
+        if (targetLang === 'en' || targetLang === '') return;
+
+        // Collect all text nodes that need translation
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+        let node;
+        const textNodes = [];
+        const uniqueTexts = new Set();
+        
+        // Skip texts that match these exact strings to prevent translating code or icons
+        const skipExact = ['en', 'hi', 'kn', 'te', 'ta'];
+        
+        while (node = walker.nextNode()) {
+            const text = node.nodeValue.trim();
+            // Skip purely numeric, empty strings, or very short strings
+            if (text.length > 1 && !/^\d+$/.test(text) && !skipExact.includes(text.toLowerCase())) {
+                const parentName = node.parentNode.nodeName;
+                if (parentName !== 'SCRIPT' && parentName !== 'STYLE' && parentName !== 'NOSCRIPT' && parentName !== 'CODE') {
+                    textNodes.push({ node: node, original: text });
+                    uniqueTexts.add(text);
+                }
+            }
+        }
+
+        if (uniqueTexts.size === 0) return;
+
+        try {
+            const response = await fetch('/api/translate-batch/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ texts: Array.from(uniqueTexts), lang: targetLang })
+            });
+            
+            const data = await response.json();
+            if (data.translations) {
+                textNodes.forEach(item => {
+                    if (data.translations[item.original]) {
+                        item.node.nodeValue = item.node.nodeValue.replace(item.original, data.translations[item.original]);
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Translation error:', e);
+        }
+    });
+    </script>
 </body>
 </html>
