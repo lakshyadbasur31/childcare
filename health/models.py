@@ -111,6 +111,10 @@ class MotherProfile(models.Model):
     postpartum_metadata = models.JSONField(default=dict, blank=True)
     priority_mode_metadata = models.JSONField(default=dict, blank=True)
     
+    # Onboarding and Relationship State
+    onboarding_completed = models.BooleanField(default=False, help_text="Flags if the mother finished the 4-step onboarding")
+    relationship_metadata = models.JSONField(default=dict, blank=True, help_text="Stores hierarchy mapping and linkage rules")
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

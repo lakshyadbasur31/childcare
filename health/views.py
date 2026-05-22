@@ -24,40 +24,24 @@ def signup(request):
     if request.user.is_authenticated:
         return redirect('index')
         
-    from django.db import transaction
     from django.contrib.auth import login as auth_login
-    from .models import User, MotherProfile, ChildProfile, Locality
-    from .logic.scheduler import generate_schedule
-    from .logic.recommender import get_nutrition_recommendation
+    from .models import User, Locality
+    from .services.onboarding_service import OnboardingService
     from datetime import datetime, date
 
     localities = Locality.objects.all()
     errors = {}
     
     if request.method == 'POST':
-        # Account Details
+        # Validation
         username = request.POST.get('username')
         password = request.POST.get('password')
-        phone_number = request.POST.get('phone_number')
-        preferred_language = request.POST.get('preferred_language', 'en')
-        locality_id = request.POST.get('locality')
-        
-        # Mother Details
         delivery_date = request.POST.get('delivery_date')
-        delivery_type = request.POST.get('delivery_type')
-        diet_preference = request.POST.get('diet_preference', 'veg')
-        allergies = request.POST.get('allergies', '')
-        mother_weight = request.POST.get('mother_weight')
-        pantry_items = request.POST.get('pantry_items', '')
-        
-        # Child Details (Optional)
         child_name = request.POST.get('child_name')
         child_date_of_birth = request.POST.get('child_date_of_birth')
-        child_gender = request.POST.get('child_gender')
         child_weight = request.POST.get('child_weight')
         child_height = request.POST.get('child_height')
         
-        # Validation
         if not username:
             errors['username'] = "Username is required."
         elif User.objects.filter(username=username).exists():
@@ -93,50 +77,14 @@ def signup(request):
                 
         if not errors:
             try:
-                # Wrap user, mother profile, child profile, and schedule initialization in a single atomic transaction
-                with transaction.atomic():
-                    # 1. Create User
-                    user = User.objects.create_user(
-                        username=username,
-                        password=password,
-                        phone_number=phone_number,
-                        preferred_language=preferred_language,
-                        is_parent=True
-                    )
-                    if locality_id:
-                        user.locality_id = int(locality_id)
-                        user.save()
-                        
-                    # 2. Create MotherProfile
-                    mother = MotherProfile.objects.create(
-                        user=user,
-                        delivery_date=delivery_date,
-                        delivery_type=delivery_type,
-                        diet_preference=diet_preference,
-                        allergies=allergies,
-                        current_weight=float(mother_weight) if mother_weight else None,
-                        pantry_items=pantry_items
-                    )
-                    
-                    # 3. Create ChildProfile (if provided)
-                    if child_name:
-                        child = ChildProfile.objects.create(
-                            parent=user,
-                            name=child_name,
-                            date_of_birth=child_date_of_birth,
-                            gender=child_gender,
-                            current_weight=float(child_weight),
-                            current_height=float(child_height),
-                            locality_id=int(locality_id) if locality_id else None
-                        )
-                        # Initialize vaccination schedule
-                        generate_schedule(child)
-                        # Initialize nutrition recommendation
-                        get_nutrition_recommendation(child)
+                # Delegate to the service layer for transaction-safe processing
+                user = OnboardingService.process_onboarding(request.POST)
                 
                 # Automatically log in the user and redirect to parent_dashboard
                 auth_login(request, user)
                 return redirect('parent_dashboard')
+            except ValueError as ve:
+                errors['non_field'] = str(ve)
             except Exception as e:
                 errors['non_field'] = f"An error occurred during registration: {str(e)}"
                 
@@ -354,6 +302,9 @@ def add_child(request):
     if request.method == 'POST':
         form = ChildProfileForm(request.POST)
         if form.is_valid():
+            mother_name = form.cleaned_data.get('mother_name')
+            mother_delivery_date = form.cleaned_data.get('mother_delivery_date')
+            
             child = form.save(commit=False)
             
             # Backend Normalization: Store in KG and CM
@@ -362,11 +313,42 @@ def add_child(request):
             if child.height_unit == 'm':
                 child.current_height = float(child.current_height) * 100
                 
-            child.parent = request.user
-            child.save()
-            generate_schedule(child)
-            get_nutrition_recommendation(child)
-            return redirect('child_detail', child_id=child.id)
+            from django.db import transaction
+            import uuid
+            from .models import User, MotherProfile
+            from health.logic.vaccination_initializer import VaccinationInitializer
+            from django.contrib import messages
+            
+            try:
+                with transaction.atomic():
+                    # Create a new unique user for this mother
+                    username = f"mother_{uuid.uuid4().hex[:8]}"
+                    new_user = User.objects.create_user(
+                        username=username,
+                        password="tempPassword123",
+                        first_name=mother_name[:30] if mother_name else "",
+                        is_parent=True,
+                        preferred_language=request.user.preferred_language
+                    )
+                    
+                    # Create MotherProfile for the new user
+                    MotherProfile.objects.create(
+                        user=new_user,
+                        delivery_date=mother_delivery_date,
+                        delivery_type='normal',
+                        onboarding_completed=True
+                    )
+                    
+                    # Link child to the NEW mother instead of request.user
+                    child.parent = new_user
+                    child.save()
+                    VaccinationInitializer.initialize_for_child(child)
+                    
+                messages.success(request, f"Child and Mother ({mother_name}) successfully registered! Generated login: {username}")
+                return redirect('add_child') # Redirect to add_child to allow continuous registration
+            except Exception as e:
+                messages.error(request, f"Failed to initialize child: {e}")
+                return redirect('add_child')
     else:
         form = ChildProfileForm()
     return render(request, 'health/add_child.html', {'form': form})

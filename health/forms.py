@@ -2,9 +2,12 @@ from django import forms
 from .models import ChildProfile, GrowthRecord, MotherProfile, RecoveryMetric
 
 class ChildProfileForm(forms.ModelForm):
+    mother_name = forms.CharField(max_length=150, required=True, label="Mother's Name", help_text="Required to link or create maternal profile.")
+    mother_delivery_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True, label="Delivery Date", help_text="Used to configure 40-day postpartum diet.")
+
     class Meta:
         model = ChildProfile
-        fields = ['name', 'date_of_birth', 'gender', 'locality', 'current_weight', 'weight_unit', 'current_height', 'height_unit']
+        fields = ['mother_name', 'mother_delivery_date', 'name', 'date_of_birth', 'gender', 'locality', 'current_weight', 'weight_unit', 'current_height', 'height_unit']
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
         }
