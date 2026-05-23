@@ -50,4 +50,7 @@ urlpatterns = [
     path('api/translate-batch/', views.translate_batch, name='translate_batch'),
     path('api/narrate/', views.narrate_story_audio, name='narrate_story_audio'),
     path('api/set-language/', views.set_language, name='set_language'),
+    
+    # WhatsApp Integration
+    path('whatsapp-demo/', views.whatsapp_demo_trigger_view, name='whatsapp_demo_trigger_view'),
 ]

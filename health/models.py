@@ -49,6 +49,21 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
     is_urgent = models.BooleanField(default=False, help_text="Triggers Red Alert badge")
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        
+        # Trigger SMS if it's a newly created notification
+        if is_new:
+            import threading
+            from health.services.sms_service import SMSService
+            
+            # Run in a separate thread so we don't block the web request while hitting translation APIs
+            threading.Thread(
+                target=SMSService.send_alert, 
+                args=(self.user, f"BHG Alert: {self.title} - {self.message}")
+            ).start()
 
     def __str__(self):
         return f"Notification for {self.user.username}: {self.title}"

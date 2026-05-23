@@ -4,6 +4,8 @@ from .models import ChildProfile, GrowthRecord, MotherProfile, RecoveryMetric
 class ChildProfileForm(forms.ModelForm):
     mother_name = forms.CharField(max_length=150, required=True, label="Mother's Name", help_text="Required to link or create maternal profile.")
     mother_delivery_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True, label="Delivery Date", help_text="Used to configure 40-day postpartum diet.")
+    mother_password = forms.CharField(widget=forms.PasswordInput, required=True, label="Create Mother's Password", help_text="Password for the new account.")
+    mother_phone_number = forms.CharField(max_length=15, required=False, label="Phone Number", help_text="For receiving translated SMS alerts.")
 
     class Meta:
         model = ChildProfile

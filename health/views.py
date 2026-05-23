@@ -304,6 +304,8 @@ def add_child(request):
         if form.is_valid():
             mother_name = form.cleaned_data.get('mother_name')
             mother_delivery_date = form.cleaned_data.get('mother_delivery_date')
+            mother_password = form.cleaned_data.get('mother_password')
+            mother_phone_number = form.cleaned_data.get('mother_phone_number')
             
             child = form.save(commit=False)
             
@@ -318,6 +320,7 @@ def add_child(request):
             from .models import User, MotherProfile
             from health.logic.vaccination_initializer import VaccinationInitializer
             from django.contrib import messages
+            from django.contrib.auth import logout
             
             try:
                 with transaction.atomic():
@@ -325,8 +328,9 @@ def add_child(request):
                     username = f"mother_{uuid.uuid4().hex[:8]}"
                     new_user = User.objects.create_user(
                         username=username,
-                        password="tempPassword123",
+                        password=mother_password,
                         first_name=mother_name[:30] if mother_name else "",
+                        phone_number=mother_phone_number,
                         is_parent=True,
                         preferred_language=request.user.preferred_language
                     )
@@ -344,8 +348,9 @@ def add_child(request):
                     child.save()
                     VaccinationInitializer.initialize_for_child(child)
                     
-                messages.success(request, f"Child and Mother ({mother_name}) successfully registered! Generated login: {username}")
-                return redirect('add_child') # Redirect to add_child to allow continuous registration
+                logout(request)
+                messages.success(request, f"Profile successfully registered! Please login using your new ID: {username}")
+                return redirect('login')
             except Exception as e:
                 messages.error(request, f"Failed to initialize child: {e}")
                 return redirect('add_child')
@@ -1022,3 +1027,80 @@ def narrate_story_audio(request):
         print(f"Narration Error: {e}")
         return JsonResponse({'error': str(e)}, status=500)
 
+@login_required
+@user_passes_test(is_parent)
+def whatsapp_demo_trigger_view(request):
+    """
+    Test harness for the TinyCare isolated WhatsApp plug-in.
+    Fetches an example child and parent profile and dispatches an alert.
+    """
+    from .utils import send_tinycare_whatsapp_alert, send_tinycare_maternal_whatsapp_alert
+    from .models import ChildProfile, VaccinationSchedule, MotherProfile
+    
+    # Get any child belonging to the user
+    child = ChildProfile.objects.filter(parent=request.user).first()
+    if not child:
+        return JsonResponse({'error': 'No child profile found for this user.'}, status=400)
+        
+    # Get a pending vaccination or dummy data
+    vax_schedule = VaccinationSchedule.objects.filter(child=child, status='pending').first()
+    
+    vaccine_name = vax_schedule.vaccine.name if vax_schedule else "OPV (Oral Polio Vaccine)"
+    consequence = vax_schedule.vaccine.consequence_text if vax_schedule and vax_schedule.vaccine.consequence_text else "Leaving your child vulnerable to severe, preventable diseases which can cause lifelong complications."
+    
+    parent_phone = request.user.phone_number
+    if not parent_phone:
+        return JsonResponse({'error': 'Parent does not have a phone number registered.'}, status=400)
+        
+    target_lang = getattr(request.user, 'preferred_language', 'en')
+        
+    child_response = send_tinycare_whatsapp_alert(
+        parent_phone=parent_phone,
+        child_name=child.name,
+        vaccine_name=vaccine_name,
+        health_consequence=consequence,
+        target_lang=target_lang
+    )
+    
+    # Dispatch Maternal Alert
+    mother_response = None
+    mother = getattr(request.user, 'mother_profile', None)
+    if mother:
+        from .models import RecoveryMetric
+        latest_metric = RecoveryMetric.objects.filter(mother=mother).order_by('-recorded_at').first()
+        
+        vital_issue = "No recent vital logs found."
+        doctor_recommendation = "Please log your vitals today to receive personalized health insights."
+        
+        if latest_metric:
+            issues = []
+            if latest_metric.systolic_bp and latest_metric.systolic_bp >= 140:
+                issues.append(f"Elevated Blood Pressure ({latest_metric.systolic_bp}/{latest_metric.diastolic_bp or '?'})")
+            if latest_metric.symptoms:
+                issues.extend([s.replace('_', ' ').title() for s in latest_metric.symptoms])
+                
+            if issues:
+                vital_issue = " & ".join(issues)
+                doctor_recommendation = "Please prioritize rest today. Continue monitoring your vitals, and consult your local ASHA worker if symptoms worsen."
+            else:
+                vital_issue = "Vitals are stable and within normal ranges."
+                doctor_recommendation = "You are recovering well! Keep following your 40-day regional diet and stay hydrated."
+
+        mother_name = request.user.first_name if request.user.first_name else "Mother"
+        
+        mother_response = send_tinycare_maternal_whatsapp_alert(
+            parent_phone=parent_phone,
+            mother_name=mother_name,
+            vital_issue=vital_issue,
+            doctor_recommendation=doctor_recommendation,
+            target_lang=target_lang
+        )
+    
+    if child_response and child_response.get('success'):
+        return JsonResponse({
+            'success': 'Demo WhatsApp alerts dispatched successfully.', 
+            'child_gateway_response': child_response,
+            'mother_gateway_response': mother_response
+        })
+    else:
+        return JsonResponse({'error': 'Failed to dispatch WhatsApp alert via gateway.', 'gateway_response': child_response}, status=500)
