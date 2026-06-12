@@ -2,3 +2,4 @@ Django
 requests
 reportlab
 deep-translator
+python-dotenv
