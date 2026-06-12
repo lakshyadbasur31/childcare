@@ -43,12 +43,19 @@ app.post('/dispatch-message/', async (req, res) => {
     const chatId = `${cleanedPhone}@c.us`;
 
     try {
-        await client.sendMessage(chatId, message);
-        console.log(`Message sent to ${chatId}`);
+        // Resolve the exact serialized ID to prevent 'getChat' undefined errors on new contacts
+        const numberId = await client.getNumberId(cleanedPhone);
+        if (!numberId) {
+            console.error(`Number not registered on WhatsApp: ${cleanedPhone}`);
+            return res.status(404).json({ error: 'Number not registered on WhatsApp.' });
+        }
+
+        await client.sendMessage(numberId._serialized, message);
+        console.log(`Message sent to ${numberId._serialized}`);
         res.status(200).json({ success: true, message: 'Message dispatched successfully.' });
     } catch (error) {
-        console.error(`Failed to send message to ${chatId}:`, error);
-        res.status(500).json({ error: 'Failed to send message.' });
+        console.error(`Failed to send message to ${cleanedPhone}:`, error);
+        res.status(500).json({ error: 'Failed to send message.', details: error.toString(), stack: error.stack });
     }
 });
 

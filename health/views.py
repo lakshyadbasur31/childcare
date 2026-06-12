@@ -441,11 +441,25 @@ def child_detail(request, child_id):
             ))
         growth_records = mock_records
     
+    # Prepare WHO Data overlays
+    from .logic.who_standards import get_who_percentiles
+    who_data = {'p3': [], 'p15': [], 'p50': [], 'p85': [], 'p97': []}
+    
+    for r in growth_records:
+        age_days = (r.recorded_at - child.date_of_birth).days
+        percentiles = get_who_percentiles(child.gender, age_days)
+        who_data['p3'].append(percentiles['p3'])
+        who_data['p15'].append(percentiles['p15'])
+        who_data['p50'].append(percentiles['p50'])
+        who_data['p85'].append(percentiles['p85'])
+        who_data['p97'].append(percentiles['p97'])
+
     # Prepare JSON-ready data for Charts
     growth_data = {
         'labels': [r.recorded_at.strftime('%b %d') for r in growth_records],
         'weights': [r.weight for r in growth_records],
-        'heights': [r.height for r in growth_records]
+        'heights': [r.height for r in growth_records],
+        'who': who_data
     }
     
     # Calculate age for UI adaptive logic
@@ -844,6 +858,7 @@ def ai_nutrition_query(request):
     Provides regional, allergy-safe responses.
     """
     import json
+    import os
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -853,7 +868,24 @@ def ai_nutrition_query(request):
             if not query:
                 return JsonResponse({'status': 'success', 'answer': 'Please ask a question about meal substitutions, allergy advice, or high-iron staples!'})
                 
-            if "ragi" in query or "substitute" in query or "substitution" in query:
+            api_key = os.environ.get("GEMINI_API_KEY")
+            if api_key:
+                try:
+                    from google import genai
+                    client = genai.Client(api_key=api_key)
+                    prompt = f"You are a helpful AI Nutrition Companion for mothers. Answer the following query briefly, focusing on accessible local foods and allergy safety. Query: {query}"
+                    response = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=prompt
+                    )
+                    return JsonResponse({'status': 'success', 'answer': response.text})
+                except ImportError:
+                    return JsonResponse({'status': 'success', 'answer': "AI Error: Please install the new SDK by running `python -m pip install google-genai`"})
+                except Exception as e:
+                    print(f"Gemini API error: {e}")
+                    return JsonResponse({'status': 'success', 'answer': f"AI Error: {str(e)}"})
+                    
+            if "ragi" in query or "substitute" in query or "substitution" in query or "alternative" in query:
                 response_text = "Ragi is exceptionally high in calcium and iron. If you need a substitute, Bajra (Pearl Millet), Jowar (Sorghum), or Red Rice powder are excellent low-cost regional alternatives."
             elif "allergy" in query or "allergen" in query or "safe" in query:
                 response_text = "For allergy safety, we dynamically substitute dairy with Almond Milk, wheat with Millets, paneer with Tofu, and ghee with Sesame Oil in all meal plans."
@@ -1103,4 +1135,5 @@ def whatsapp_demo_trigger_view(request):
             'mother_gateway_response': mother_response
         })
     else:
-        return JsonResponse({'error': 'Failed to dispatch WhatsApp alert via gateway.', 'gateway_response': child_response}, status=500)
+        error_msg = child_response.get('error') if child_response and 'error' in child_response else 'Failed to dispatch WhatsApp alert via gateway.'
+        return JsonResponse({'error': error_msg, 'gateway_response': child_response}, status=500)

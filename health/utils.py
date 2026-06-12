@@ -38,8 +38,14 @@ def send_tinycare_whatsapp_alert(parent_phone, child_name, vaccine_name, health_
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        logger.error(f"Failed to send WhatsApp alert for {child_name} to {parent_phone}: {str(e)}")
-        return None
+        response_text = e.response.text if hasattr(e, 'response') and e.response else ''
+        logger.error(f"Failed to send WhatsApp alert for {child_name} to {parent_phone}: {str(e)} - Response: {response_text}")
+        error_msg = 'Unknown gateway error'
+        try:
+            error_msg = e.response.json().get('error', error_msg) if hasattr(e, 'response') and e.response else str(e)
+        except:
+            pass
+        return {'success': False, 'error': error_msg}
 
 def send_tinycare_maternal_whatsapp_alert(parent_phone, mother_name, vital_issue, doctor_recommendation, target_lang='en'):
     """
@@ -67,6 +73,12 @@ def send_tinycare_maternal_whatsapp_alert(parent_phone, mother_name, vital_issue
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        logger.error(f"Failed to send Maternal WhatsApp alert to {parent_phone}: {str(e)}")
-        return None
+        response_text = e.response.text if hasattr(e, 'response') and e.response else ''
+        logger.error(f"Failed to send Maternal WhatsApp alert to {parent_phone}: {str(e)} - Response: {response_text}")
+        error_msg = 'Unknown gateway error'
+        try:
+            error_msg = e.response.json().get('error', error_msg) if hasattr(e, 'response') and e.response else str(e)
+        except:
+            pass
+        return {'success': False, 'error': error_msg}
 
