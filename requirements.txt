@@ -2,3 +2,6 @@ Django
 requests
 reportlab
 deep-translator
+python-dotenv
+psycopg2-binary
+dj-database-url
