@@ -8,8 +8,8 @@
             <i class="fas fa-arrow-left"></i>
         </a>
         <div>
-            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Create Hero Profile</h1>
-            <p class="text-slate-500 font-medium">Add your child to start tracking their health journey.</p>
+            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Create Hero/Heroine Profile</h1>
+            <p class="text-slate-500 font-medium">Add your child to start tracking their milestones journey.</p>
         </div>
     </div>
 
@@ -28,6 +28,51 @@
             {% endif %}
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Mother Details Section -->
+                <div class="md:col-span-2 mb-2 pb-4 border-b border-slate-100">
+                    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-person-breastfeeding text-rose-500"></i> Mother's Information
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-600 mb-2">Mother's Name</label>
+                            <input type="text" name="{{ form.mother_name.name }}" required 
+                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all text-slate-800 font-medium"
+                                   placeholder="Enter mother's full name">
+                            {{ form.mother_name.errors }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-600 mb-2">Delivery Date</label>
+                            <input type="date" name="{{ form.mother_delivery_date.name }}" required 
+                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all text-slate-800 font-medium">
+                            {{ form.mother_delivery_date.errors }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-600 mb-2">Create Mother's Password</label>
+                            <input type="password" name="{{ form.mother_password.name }}" required 
+                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all text-slate-800 font-medium"
+                                   placeholder="Create a secure password">
+                            <p class="text-[10px] text-slate-500 mt-2"><i class="fas fa-lock text-rose-400"></i> The mother will use this password to log in.</p>
+                            {{ form.mother_password.errors }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-600 mb-2">Phone Number (Optional)</label>
+                            <input type="tel" name="{{ form.mother_phone_number.name }}"
+                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all text-slate-800 font-medium"
+                                   placeholder="e.g. +91 9876543210">
+                            <p class="text-[10px] text-slate-500 mt-2"><i class="fas fa-bell text-rose-400"></i> For receiving translated SMS alerts.</p>
+                            {{ form.mother_phone_number.errors }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Child Details Section -->
+                <div class="md:col-span-2 mt-2">
+                    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-child text-primary"></i> Child's Information
+                    </h3>
+                </div>
                 <!-- Name -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-bold text-slate-600 mb-2">Child's Name</label>
@@ -59,16 +104,70 @@
 
                 <!-- Locality -->
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-bold text-slate-600 mb-2">Locality / District</label>
-                    <select name="{{ form.locality.name }}" required 
+                    <div class="flex justify-between items-end mb-2">
+                        <label class="block text-sm font-bold text-slate-600">Locality / District</label>
+                        <button type="button" onclick="detectGPSLocation()" id="gps-btn" class="text-[10px] font-black text-primary bg-indigo-50 px-3 py-1 rounded-full uppercase hover:bg-primary hover:text-white transition-all flex items-center gap-1">
+                            <i class="fas fa-location-crosshairs"></i> Auto-Detect via GPS
+                        </button>
+                    </div>
+                    <select name="{{ form.locality.name }}" id="id_locality" required 
                             class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 font-medium appearance-none">
                         {% for value, label in form.fields.locality.choices %}
                             <option value="{{ value }}">{{ label }}</option>
                         {% endfor %}
                     </select>
-                    <p class="text-xs text-slate-500 mt-2"><i class="fas fa-info-circle text-primary"></i> This is required to calculate accurate local nutrition plans.</p>
+                    <p class="text-[10px] text-slate-500 mt-2" id="gps-status"><i class="fas fa-info-circle text-primary"></i> This is required to calculate accurate local nutrition plans.</p>
                     {{ form.locality.errors }}
                 </div>
+
+                <script>
+                    function detectGPSLocation() {
+                        const btn = document.getElementById('gps-btn');
+                        const status = document.getElementById('gps-status');
+                        const localitySelect = document.getElementById('id_locality');
+
+                        if (!navigator.geolocation) {
+                            alert("Geolocation is not supported by your browser");
+                            return;
+                        }
+
+                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
+                        btn.disabled = true;
+
+                        navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                                const lat = position.coords.latitude;
+                                const lon = position.coords.longitude;
+
+                                fetch("{% url 'detect_locality' %}?lat=" + lat + "&lon=" + lon)
+                                    .then(async response => {
+                                        const data = await response.json();
+                                        if (response.ok) {
+                                            localitySelect.value = data.id;
+                                            status.innerHTML = `<i class="fas fa-check-circle text-green-500"></i> Successfully detected: <b>${data.name}</b> (${data.region})`;
+                                            status.className = "text-[10px] text-green-600 mt-2";
+                                            btn.innerHTML = '<i class="fas fa-check"></i> Location Set';
+                                            btn.className = "text-[10px] font-black text-white bg-green-500 px-3 py-1 rounded-full uppercase pointer-events-none";
+                                        } else {
+                                            status.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500"></i> ${data.error || 'Could not detect locality'}`;
+                                            btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Retry GPS';
+                                            btn.disabled = false;
+                                        }
+                                    })
+                                    .catch(err => {
+                                        status.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500"></i> Connection failed. Check your internet or GPS settings.`;
+                                        btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Retry GPS';
+                                        btn.disabled = false;
+                                    });
+                            },
+                            () => {
+                                status.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500"></i> Permission denied or location unavailable.`;
+                                btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Retry GPS';
+                                btn.disabled = false;
+                            }
+                        );
+                    }
+                </script>
 
                 <!-- Initial Biometrics -->
                 <div class="md:col-span-2 mt-4 pt-6 border-t border-slate-100">
@@ -77,20 +176,40 @@
                     </h3>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-2">Current Weight (kg)</label>
-                    <input type="number" step="0.1" name="{{ form.current_weight.name }}" required 
-                           class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 font-medium"
-                           placeholder="e.g., 4.5">
-                    {{ form.current_weight.errors }}
+                <!-- Weight and Unit -->
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        <label class="block text-sm font-bold text-slate-600 mb-2">Weight</label>
+                        <input type="number" step="0.1" name="{{ form.current_weight.name }}" required 
+                               class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 font-medium"
+                               placeholder="0.0">
+                    </div>
+                    <div class="w-24">
+                        <label class="block text-sm font-bold text-slate-600 mb-2">Unit</label>
+                        <select name="{{ form.weight_unit.name }}" class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-r-xl focus:outline-none text-slate-800 font-bold appearance-none">
+                            {% for value, label in form.fields.weight_unit.choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 mb-2">Current Height (cm)</label>
-                    <input type="number" step="0.1" name="{{ form.current_height.name }}" required 
-                           class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 font-medium"
-                           placeholder="e.g., 55">
-                    {{ form.current_height.errors }}
+                <!-- Height and Unit -->
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        <label class="block text-sm font-bold text-slate-600 mb-2">Height</label>
+                        <input type="number" step="0.1" name="{{ form.current_height.name }}" required 
+                               class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-slate-800 font-medium"
+                               placeholder="0.0">
+                    </div>
+                    <div class="w-24">
+                        <label class="block text-sm font-bold text-slate-600 mb-2">Unit</label>
+                        <select name="{{ form.height_unit.name }}" class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-r-xl focus:outline-none text-slate-800 font-bold appearance-none">
+                            {% for value, label in form.fields.height_unit.choices %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
             </div>
 

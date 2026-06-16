@@ -1,0 +1,12 @@
+node_modules/
+.wwebjs_auth/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+db.sqlite3
+.DS_Store

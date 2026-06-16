@@ -1,0 +1,31 @@
+# Bharat-Health Guardian Enhancements Task Checklist
+
+- [x] STEP 1: Implement Database Migration
+  - [x] Add `phone_number` and `preferred_language` fields to custom `User` model.
+  - [x] Add `postpartum_metadata` and `priority_mode_metadata` fields to `MotherProfile` model.
+  - [x] Add child age validation to models (DOB restriction up to 13 years).
+  - [x] Verify migrations and execute safely.
+- [ ] STEP 2: Multi-Language Translation Service (Feature 1)
+  - [ ] Create `health/translation/services/translation_service.py` with deep-translator integration and caching.
+  - [ ] Add language selector in navigation bar.
+  - [ ] Support dynamic translation for child details, stories, and notifications.
+- [ ] STEP 3: Alert Notification Infrastructure (Feature 2)
+  - [ ] Create `health/notifications/services/messaging_service.py` with provider abstraction.
+  - [ ] Build `ConsoleSMSProvider` and asynchronous queue dispatching.
+  - [ ] Integrate SMS alerts with vaccine scheduler and red flags.
+- [ ] STEP 4: Onboarding Redesign (Feature 3)
+  - [ ] Implement Mother-First user flow with transaction containment.
+  - [ ] Adapt signup forms and verify vaccination init.
+- [ ] STEP 5: Developmental Recommendation Rule Engine (Feature 4 & 5)
+  - [ ] Implement `health/activities/age_rules.py`.
+  - [ ] Strict medically-safe age filtering for infant activities under 6 months.
+  - [ ] Implement early infant priority mode.
+- [ ] STEP 6: Delayed Maternal Exercise Module (Feature 6)
+  - [ ] Create `health/recovery/exercise_progression.py`.
+  - [ ] Restrict activities to medically safe rest before 3 months, walking/stretching after 3 months.
+- [ ] STEP 7: Modernize Maternal Mood & Health Calendar UI (Feature 8)
+  - [ ] Refactor dashboard template with glassmorphism design.
+  - [ ] Add interactive mood metrics and widgets.
+- [ ] STEP 8: Testing & Verification
+  - [ ] Execute test cases for new modules.
+  - [ ] Regression check scheduler, PDF generator, and recommender.

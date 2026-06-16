@@ -1,201 +1,248 @@
 {% extends 'health/base.html' %}
 
 {% block content %}
-<!-- Header Section -->
-<div class="flex justify-between items-end mb-12">
-    <div>
-        <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight">Hello, {{ user.username }}!</h1>
-        <p class="text-lg text-slate-500 mt-1">Your child's healthcare journey continues here.</p>
+<!-- PRESTIGIOUS HERO BANNER -->
+<div class="relative bg-gradient-to-br from-slate-950 via-indigo-950/60 to-slate-950 rounded-[3rem] p-12 overflow-hidden mb-12 shadow-2xl border border-slate-800/40 flex flex-col md:flex-row items-center justify-between gap-8 min-h-[350px]">
+    {% load static %}
+    <!-- Soft Decorative Glows -->
+    <div class="absolute -left-20 -top-20 w-80 h-80 bg-primary/10 rounded-full blur-[100px]"></div>
+    <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-rose-500/10 rounded-full blur-[100px]"></div>
+    
+    <div class="relative z-10 max-w-2xl">
+        <div class="inline-flex items-center gap-2 text-primary font-bold mb-4 tracking-widest uppercase text-[10px] bg-slate-900/80 px-4 py-1.5 rounded-full border border-slate-800">
+            <i class="fas fa-sparkles text-amber-400"></i> Welcome to the Future of Parenting
+        </div>
+        <h1 class="text-5xl md:text-6xl font-black text-white leading-tight mb-2">
+            TinyCare:
+        </h1>
+        <p class="text-lg md:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-sky-400 mb-6">
+            Small steps. Giant milestones.
+        </p>
+        <p class="text-sm text-slate-400 leading-relaxed font-medium mb-6">
+            An offline-first, regionalized child development engine integrated with complete postpartum maternal care. Empowering Indian mothers and children through science, locality context, and love.
+        </p>
     </div>
-    {% if urgent_count > 0 %}
-    <div class="bg-pastel-red/50 border-2 border-red-200 text-red-700 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 animate-pulse shadow-soft">
-        <i class="fas fa-bell"></i> {{ urgent_count }} Action Required
+
+    <!-- Live Platform Overview Tracker -->
+    <div class="relative z-10 bg-slate-900/90 border border-slate-800 rounded-[2.5rem] p-8 min-w-[280px] shadow-2xl flex-shrink-0">
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-6">Family Status Board</h3>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800/60">
+                <span class="text-xs text-slate-400 font-semibold"><i class="fas fa-child text-primary mr-1.5"></i> Children</span>
+                <span class="text-sm font-black text-white bg-slate-800 px-3 py-1 rounded-xl">{{ children.count }}</span>
+            </div>
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800/60">
+                <span class="text-xs text-slate-400 font-semibold"><i class="fas fa-heart-pulse text-rose-500 mr-1.5"></i> Mother</span>
+                <span class="text-xs font-black text-white">
+                    {% if mother %}
+                        Day {{ maternal_context.day_number }}
+                    {% else %}
+                        Not Setup
+                    {% endif %}
+                </span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-400 font-semibold"><i class="fas fa-bell text-yellow-500 mr-1.5"></i> Active Alerts</span>
+                <span class="text-xs font-black text-slate-900 bg-yellow-400 px-2 py-0.5 rounded-lg animate-pulse">{{ urgent_count }}</span>
+            </div>
+        </div>
     </div>
-    {% endif %}
 </div>
 
-<!-- Main Content Grid -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    
-    <!-- Left Column: Child Profiles & Roadmaps -->
-    <div class="col-span-2 space-y-8">
-        {% for child in children %}
-        <div class="bg-white rounded-[2rem] shadow-dribbble overflow-hidden border border-slate-100 relative">
+<!-- THE TWO MAGNIFICENT DUAL HUB PORTALS -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+    <!-- PORTAL A: PEDIATRIC DEVELOPMENT HUB -->
+    <div class="group relative bg-gradient-to-br from-indigo-950/80 via-slate-900/90 to-slate-950 rounded-[3rem] border border-indigo-500/20 p-10 hover:border-primary/40 hover:shadow-indigo-500/10 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden">
+        <div class="absolute -right-12 -top-12 w-48 h-48 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors"></div>
+        <div>
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-8">
+                <div class="w-16 h-16 bg-primary/10 border border-primary/20 text-primary text-3xl rounded-2xl flex items-center justify-center shadow-lg shadow-primary/10 group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-child-reaching animate-bounce"></i>
+                </div>
+                <span class="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-800/40 px-3 py-1 rounded-full border border-slate-800">Child Portal</span>
+            </div>
             
-            <!-- Child Header -->
-            <div class="bg-pastel-blue p-8 flex items-center gap-6">
-                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-3xl text-primary shadow-soft relative">
-                    <i class="fas fa-child"></i>
-                    <div class="absolute -bottom-2 -right-2 bg-secondary text-white text-xs font-bold px-2 py-1 rounded-lg shadow-sm">
-                        LVL 2
-                    </div>
-                </div>
-                <div class="flex-1">
-                    <h2 class="text-2xl font-bold text-slate-800">{{ child.name }}</h2>
-                    <p class="text-slate-500 font-medium">DOB: {{ child.date_of_birth }} &bull; Health Hero</p>
-                    
-                    <!-- Progress Bar -->
-                    <div class="mt-4 bg-white/50 h-3 rounded-full overflow-hidden">
-                        <div class="bg-primary h-full w-[45%] rounded-full relative">
-                            <div class="absolute right-0 top-0 bottom-0 w-4 bg-white/20 animate-[pulse_1s_ease-in-out_infinite]"></div>
-                        </div>
-                    </div>
-                    <p class="text-xs text-primary font-bold mt-1 text-right">45% to Next Rank</p>
-                    
-                    <!-- Quick Links / Feature Tabs -->
-                    <div class="mt-6 flex flex-wrap gap-3">
-                        <a href="{% url 'child_detail' child.id %}" class="bg-indigo-50 hover:bg-indigo-100 text-primary px-4 py-2 rounded-xl text-xs font-bold transition-colors border border-indigo-100">
-                            <i class="fas fa-utensils mr-1"></i> Nutrition Engine
-                        </a>
-                        <a href="{% url 'child_detail' child.id %}" class="bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2 rounded-xl text-xs font-bold transition-colors border border-green-100">
-                            <i class="fas fa-chart-line mr-1"></i> Growth Tracking
-                        </a>
-                        <a href="{% url 'child_detail' child.id %}" class="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 px-4 py-2 rounded-xl text-xs font-bold transition-colors border border-yellow-100">
-                            <i class="fas fa-gamepad mr-1"></i> Logic Games
-                        </a>
-                        <a href="{% url 'download_passport' child.id %}" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-sm ml-auto">
-                            <i class="fas fa-download mr-1"></i> Passport
-                        </a>
-                    </div>
+            <h2 class="text-3xl font-black text-white mb-3">Pediatric Hub</h2>
+            <p class="text-xs text-slate-400 font-medium mb-6">Nurturing your children's physical growth, local immunizations, offline brain activities, and generating secure health passports.</p>
+            
+            <!-- Features List -->
+            <ul class="space-y-3 mb-8">
+                <li class="flex items-center gap-3 text-xs text-slate-300 font-semibold">
+                    <i class="fas fa-check-circle text-primary"></i> Age-Adaptive Development Quests
+                </li>
+                <li class="flex items-center gap-3 text-xs text-slate-300 font-semibold">
+                    <i class="fas fa-check-circle text-primary"></i> Bedtime Stories with Cartoon Stars
+                </li>
+                <li class="flex items-center gap-3 text-xs text-slate-300 font-semibold">
+                    <i class="fas fa-check-circle text-primary"></i> Dynamic Immunization Schedule
+                </li>
+                <li class="flex items-center gap-3 text-xs text-slate-300 font-semibold">
+                    <i class="fas fa-check-circle text-primary"></i> Exportable Superhero Health Passport
+                </li>
+            </ul>
+
+            <!-- Children Summary Roll -->
+            {% if children %}
+            <div class="bg-slate-950/60 rounded-2xl border border-slate-800/80 p-4 mb-6">
+                <p class="text-[9px] font-bold uppercase text-slate-500 mb-2">Registered Children</p>
+                <div class="flex flex-wrap gap-2">
+                    {% for child in children %}
+                    <span class="text-xs bg-slate-900 border border-slate-800 px-3 py-1 rounded-lg text-slate-300 font-black">
+                        {{ child.name }} ({{ child.date_of_birth|timesince }})
+                    </span>
+                    {% endfor %}
                 </div>
             </div>
-
-            <!-- Interactive Roadmap (SVG Pathing) -->
-            <div class="p-8 pb-12 relative overflow-hidden">
-                <h3 class="text-xl font-bold text-slate-800 mb-8 flex items-center gap-2">
-                    <i class="fas fa-map text-secondary"></i> Immunity Roadmap
-                </h3>
-                
-                <div class="relative max-w-lg mx-auto">
-                    <!-- SVG Winding Path Background -->
-                    <svg class="absolute inset-0 w-full h-full -z-10" viewBox="0 0 100 200" preserveAspectRatio="none">
-                        <path d="M 10 10 Q 50 50 10 90 T 50 170" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4 4" />
-                    </svg>
-
-                    <!-- Roadmap Nodes -->
-                    <div class="space-y-12 relative">
-                        
-                        <!-- Completed Node -->
-                        <div class="flex items-center gap-6 group cursor-pointer">
-                            <div class="w-12 h-12 bg-secondary text-white rounded-full flex items-center justify-center shadow-lg shadow-green-200 z-10 transition-transform group-hover:scale-110">
-                                <i class="fas fa-check"></i>
-                            </div>
-                            <div class="bg-pastel-green px-6 py-4 rounded-2xl flex-1 relative transition-all group-hover:shadow-md">
-                                <div class="absolute left-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-pastel-green rotate-45"></div>
-                                <h4 class="font-bold text-green-800">Birth Immunization</h4>
-                                <p class="text-sm text-green-700">BCG, HepB, OPV completed.</p>
-                                <span class="text-xs font-bold text-white bg-green-600 px-2 py-1 rounded mt-2 inline-block"><i class="fas fa-shield"></i> Shield Unlocked</span>
-                            </div>
-                        </div>
-
-                        <!-- Active/Pending Node -->
-                        <div class="flex items-center gap-6 group cursor-pointer ml-8">
-                            <div class="w-14 h-14 bg-white border-4 border-accent text-accent rounded-full flex items-center justify-center shadow-xl shadow-yellow-100 z-10 relative">
-                                <div class="absolute inset-0 border-4 border-accent rounded-full animate-ping opacity-20"></div>
-                                <i class="fas fa-star text-xl"></i>
-                            </div>
-                            <div class="bg-pastel-yellow px-6 py-4 rounded-2xl flex-1 relative border border-yellow-200 transition-all group-hover:shadow-lg">
-                                <div class="absolute left-[-8px] top-1/2 -translate-y-1/2 w-4 h-4 bg-pastel-yellow border-b border-l border-yellow-200 rotate-45"></div>
-                                <div class="flex justify-between items-start">
-                                    <h4 class="font-bold text-yellow-800">6-Week Milestone</h4>
-                                    <span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">ACTION REQUIRED</span>
-                                </div>
-                                <p class="text-sm text-yellow-700 mt-1">Pentavalent, Rotavirus, fIPV, PCV.</p>
-                                
-                                <div class="mt-4 flex gap-2">
-                                    <!-- Tooltip Trigger (Simulated with hover) -->
-                                    <button class="bg-white text-yellow-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-yellow-50 transition-colors relative group/tooltip">
-                                        Why it matters?
-                                        <div class="absolute bottom-full left-0 mb-2 w-48 bg-slate-800 text-white text-xs p-2 rounded hidden group-hover/tooltip:block z-50">
-                                            Protects against 5 major diseases including Diphtheria and Tetanus.
-                                        </div>
-                                    </button>
-                                    <a href="{% url 'child_detail' child.id %}" class="bg-accent text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-yellow-600 transition-colors">
-                                        Train Hero <i class="fas fa-arrow-right ml-1"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Locked Node -->
-                        <div class="flex items-center gap-6 opacity-50 ml-4">
-                            <div class="w-10 h-10 bg-slate-200 text-slate-400 rounded-full flex items-center justify-center z-10">
-                                <i class="fas fa-lock"></i>
-                            </div>
-                            <div class="bg-slate-50 border border-slate-200 px-6 py-4 rounded-2xl flex-1">
-                                <h4 class="font-bold text-slate-600">10-Week Milestone</h4>
-                                <p class="text-sm text-slate-400">Unlocks after completing 6-Week quest.</p>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
+            {% endif %}
         </div>
-        {% empty %}
-        <!-- Empty State -->
-        <div class="bg-white rounded-[2rem] shadow-dribbble p-12 text-center border border-dashed border-slate-300">
-            <div class="w-24 h-24 bg-pastel-blue rounded-full flex items-center justify-center text-4xl text-primary mx-auto mb-6">
-                <i class="fas fa-baby-carriage"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-slate-800 mb-2">Welcome to the Journey!</h2>
-            <p class="text-slate-500 mb-8 max-w-md mx-auto">Register your child to start tracking their health milestones on an interactive roadmap.</p>
-            <a href="{% url 'add_child' %}" class="bg-primary hover:bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all inline-block">
-                <i class="fas fa-plus mr-2"></i> Create Hero Profile
-            </a>
-        </div>
-        {% endfor %}
+        
+        <a href="{% url 'children_dashboard' %}" class="w-full bg-primary hover:bg-sky-400 text-slate-950 text-center py-4 rounded-2xl font-black transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 flex items-center justify-center gap-2">
+            Explore Pediatric Hub <i class="fas fa-arrow-right"></i>
+        </a>
     </div>
 
-    <!-- Right Column: Sidebar -->
-    <div class="space-y-8">
-        
-        <!-- Storybook Achievements -->
-        <div class="bg-white rounded-[2rem] shadow-dribbble p-6 border border-slate-100">
-            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <i class="fas fa-trophy text-accent"></i> Recent Trophies
-            </h3>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-pastel-yellow p-4 rounded-xl text-center">
-                    <i class="fas fa-shield-virus text-3xl text-accent mb-2"></i>
-                    <p class="text-xs font-bold text-slate-700">Shield of BCG</p>
+    <!-- PORTAL B: MATERNAL RECOVERY & WELLNESS HUB -->
+    <div class="group relative bg-gradient-to-br from-rose-950/40 via-slate-900/90 to-slate-950 rounded-[3rem] border border-rose-500/20 p-10 hover:border-rose-500/40 hover:shadow-rose-500/5 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden">
+        <div class="absolute -right-12 -top-12 w-48 h-48 bg-rose-500/5 rounded-full blur-3xl group-hover:bg-rose-500/10 transition-colors"></div>
+        <div>
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-8">
+                <div class="w-16 h-16 bg-rose-500/10 border border-rose-500/20 text-rose-500 text-3xl rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/10 group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-person-breastfeeding animate-pulse"></i>
                 </div>
-                <div class="bg-pastel-green p-4 rounded-xl text-center opacity-40 grayscale">
-                    <i class="fas fa-drumstick-bite text-3xl text-secondary mb-2"></i>
-                    <p class="text-xs font-bold text-slate-700">Protein Power</p>
-                    <p class="text-[10px] text-slate-500">Locked</p>
-                </div>
+                <span class="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-slate-800/40 px-3 py-1 rounded-full border border-slate-800">Mother Portal</span>
             </div>
-            <button class="w-full mt-4 bg-slate-50 hover:bg-slate-100 text-slate-600 py-2 rounded-xl text-sm font-semibold transition-colors">
-                View Storybook PDF
-            </button>
-        </div>
+            
+            <h2 class="text-3xl font-black text-white mb-3">Maternal Recovery</h2>
+            <p class="text-xs text-slate-400 font-medium mb-6">Regionalized 40-day postpartum customized nutrition plans (Veg/Non-Veg), weekly core workout plans, and mental wellness guidance.</p>
+            
+            <!-- Features List -->
+            <ul class="space-y-3 mb-8">
+                <li class="flex items-center gap-3 text-xs text-slate-300 font-semibold">
+                    <i class="fas fa-check-circle text-rose-500"></i> regionalized 40-day Nutrition Engine (Veg/Non-Veg)
+                </li>
+                <li class="flex items-center gap-3 text-xs text-slate-300 font-semibold">
+                    <i class="fas fa-check-circle text-rose-500"></i> Postpartum Core & Pelvic Floor Exercises
+                </li>
+                <li class="flex items-center gap-3 text-xs text-slate-300 font-semibold">
+                    <i class="fas fa-check-circle text-rose-500"></i> Mental Well-being Tip Rotation
+                </li>
+                <li class="flex items-center gap-3 text-xs text-slate-300 font-semibold">
+                    <i class="fas fa-check-circle text-rose-500"></i> Red Alert Warnings & BP Loggers
+                </li>
+            </ul>
 
-        <!-- Notification Feed -->
-        <div class="bg-white rounded-[2rem] shadow-dribbble p-6 border border-slate-100">
-            <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <i class="fas fa-flag-checkered text-primary"></i> Quest Updates
-            </h3>
-            <div class="space-y-6">
-                {% for note in notifications|slice:":3" %}
-                <div class="flex gap-4 relative">
-                    <div class="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center z-10 {% if note.is_urgent %}bg-pastel-red text-red-600{% else %}bg-pastel-blue text-primary{% endif %}">
-                        <i class="fas {% if note.is_urgent %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+            <!-- Mother Summary Roll -->
+            <div class="bg-slate-950/60 rounded-2xl border border-slate-800/80 p-4 mb-6">
+                <p class="text-[9px] font-bold uppercase text-slate-500 mb-2">Active Care Status</p>
+                {% if mother %}
+                <div class="flex items-center gap-2">
+                    <span class="text-xs bg-slate-900 border border-slate-800 px-3 py-1 rounded-lg text-slate-300 font-black">
+                        Day {{ maternal_context.day_number }} recovery
+                    </span>
+                    <span class="text-xs px-2.5 py-0.5 rounded-lg font-black uppercase text-[10px] 
+                        {% if mother.diet_preference == 'veg' %}bg-green-500/20 text-green-400 border border-green-500/30{% else %}bg-amber-500/20 text-amber-400 border border-amber-500/30{% endif %}">
+                        {{ mother.get_diet_preference_display }}
+                    </span>
+                </div>
+                {% else %}
+                <span class="text-xs italic text-slate-500">No profile initialized yet.</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <a href="{% url 'maternal_dashboard' %}" class="w-full bg-slate-100 hover:bg-white text-slate-950 text-center py-4 rounded-2xl font-black transition-all shadow-lg flex items-center justify-center gap-2">
+            {% if mother %}Launch Maternal Recovery{% else %}Setup Maternal Profile{% endif %} <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+</div>
+
+<!-- BOTTOM HIGHLIGHT SECTION: LIVE ALERTS & INSIGHTS FEED -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+    <!-- Main Info column -->
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-slate-900/50 rounded-[2.5rem] border border-slate-850 p-8 shadow-inner">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-black text-white flex items-center gap-2">
+                    <i class="fas fa-bullhorn text-primary"></i> Active Health Notifications
+                </h3>
+                <button onclick="triggerWhatsAppDemo()" class="bg-[#25D366] hover:bg-[#128C7E] text-white text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-xl transition-all shadow-lg flex items-center gap-2">
+                    <i class="fab fa-whatsapp text-sm"></i> Test WhatsApp Alert
+                </button>
+            </div>
+            <div class="space-y-4">
+                {% for note in notifications|slice:":4" %}
+                <div class="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-4 flex gap-4 items-start transition-all hover:bg-slate-900 hover:border-slate-700">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0
+                        {% if note.is_urgent %}bg-red-500/20 text-red-500 animate-pulse border border-red-500/30{% else %}bg-sky-500/20 text-sky-400{% endif %}">
+                        <i class="fas {% if note.is_urgent %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %} text-xs"></i>
                     </div>
                     <div>
-                        <div class="flex justify-between items-start">
-                            <h4 class="font-bold text-sm text-slate-800">{{ note.title }}</h4>
-                        </div>
-                        <p class="text-xs text-slate-500 mt-1 line-clamp-2">{{ note.message }}</p>
-                        <span class="text-[10px] text-slate-400 font-medium mt-1 block">{{ note.created_at|timesince }} ago</span>
+                        <h5 class="text-sm font-black text-white">{{ note.title }}</h5>
+                        <p class="text-xs text-slate-400 mt-1">{{ note.message }}</p>
                     </div>
                 </div>
                 {% empty %}
-                <p class="text-slate-500 text-sm text-center py-4">No recent updates.</p>
+                <div class="p-8 text-center text-slate-500 italic text-xs">
+                    <i class="fas fa-check-circle text-emerald-500 text-lg mb-2 block"></i>
+                    All systems secure. No health notifications pending.
+                </div>
                 {% endfor %}
             </div>
         </div>
-
+    </div>
+    
+    <!-- Sidebar actions column -->
+    <div class="space-y-6">
+        <div class="bg-indigo-900/20 rounded-[2.5rem] p-8 text-white border border-indigo-500/10 shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/20 rounded-full blur-xl"></div>
+            <h4 class="text-lg font-black mb-6 flex items-center gap-2">
+                <i class="fas fa-star text-yellow-400"></i> Mother Wellness Corner
+            </h4>
+            {% if mother %}
+            <div class="space-y-4">
+                <div class="p-4 bg-slate-900/80 rounded-2xl border border-slate-800">
+                    <h5 class="text-indigo-400 font-bold text-[9px] uppercase mb-1">Affirmation of the Day</h5>
+                    <p class="text-xs italic text-slate-300">"{{ maternal_context.daily_affirmation }}"</p>
+                </div>
+                <div class="p-4 bg-slate-900/80 rounded-2xl border border-slate-800">
+                    <h5 class="text-indigo-400 font-bold text-[9px] uppercase mb-1">Support Tip</h5>
+                    <p class="text-xs text-slate-300">{{ maternal_context.daily_tip }}</p>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center p-6 text-slate-500 italic text-xs">
+                Setup Mother Profile to unlock daily postpartum affirmations and support tips.
+            </div>
+            {% endif %}
+        </div>
     </div>
 </div>
+
+<script>
+    function triggerWhatsAppDemo() {
+        const btn = event.currentTarget;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin text-sm"></i> Sending...';
+        btn.disabled = true;
+        
+        fetch("{% url 'whatsapp_demo_trigger_view' %}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("✅ " + data.success + "\nCheck your WhatsApp!");
+                } else {
+                    alert("❌ Error: " + (data.error || "Failed to dispatch"));
+                }
+            })
+            .catch(error => {
+                alert("❌ Network Error: " + error);
+            })
+            .finally(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+    }
+</script>
 {% endblock %}
